@@ -1,0 +1,174 @@
+{
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.view.pdf.internal.synctex.keybinding": "double-click",
+  "latex-workshop.synctex.afterBuild.enabled": true,
+  "latex-workshop.view.pdf.zoom": "page-width",
+  "latex-workshop.view.pdf.scrollMode": 0,
+  "latex-workshop.view.pdf.spreadMode": 0,
+  "latex-workshop.view.pdf.tab.editorGroup": "right",
+  "latex-workshop.view.pdf.hand": false,
+  "latex-workshop.view.pdf.trim": 0,
+  "latex-workshop.view.pdf.reload.transition": "fade",
+  "latex-workshop.showContextMenu": true,
+  "latex-workshop.intellisense.package.enabled": true,
+  "latex-workshop.message.error.show": true,
+  "latex-workshop.message.warning.show": true,
+  "latex-workshop.message.information.show": true,
+  "latex-workshop.latex.outDir": "%DIR%/out",
+  "latex-workshop.latex.build.forceRecipeUsage": true,
+  "latex-workshop.latex.autoBuild.run": "onFileChange",
+  "latex-workshop.latex.watch.pdf.delay": 400,
+  "latex-workshop.latex.rootFile.useSubFile": true,
+  "latex-workshop.latex.rootFile.doNotPrompt": true,
+  "latex-workshop.latex.search.rootFiles.include": [
+    "**/*.tex"
+  ],
+  "latex-workshop.latex.search.rootFiles.exclude": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.history/**",
+    "**/.vscode/**",
+    "**/out/**"
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk (xelatex)",
+      "command": "latexmk",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-xelatex",
+        "-outdir=%OUTDIR%",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "xelatex",
+      "command": "xelatex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-output-directory=%OUTDIR%",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "biber",
+      "command": "biber",
+      "args": [
+        "%OUTDIR%/%DOCFILE%"
+      ]
+    },
+    {
+      "name": "bibtex",
+      "command": "bibtex",
+      "args": [
+        "%OUTDIR%/%DOCFILE%"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "latexmk: xelatex（推荐）",
+      "tools": [
+        "latexmk (xelatex)"
+      ]
+    },
+    {
+      "name": "手动：xelatex → bibtex → xelatex×2",
+      "tools": [
+        "xelatex",
+        "bibtex",
+        "xelatex",
+        "xelatex"
+      ]
+    },
+    {
+      "name": "单次：xelatex",
+      "tools": [
+        "xelatex"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.autoClean.run": "onBuilt",
+  "latex-workshop.latex.clean.method": "glob",
+  "latex-workshop.latex.clean.fileTypes": [
+    "*.aux",
+    "*.log",
+    "*.toc",
+    "*.lof",
+    "*.lot",
+    "*.out",
+    "*.fls",
+    "*.fdb_latexmk",
+    "*.synctex(busy)",
+    "*.synctex.gz(busy)",
+    "*.bbl",
+    "*.bcf",
+    "*.blg",
+    "*.run.xml",
+    "*.idx",
+    "*.ind",
+    "*.ilg",
+    "*.ist",
+    "*.acn",
+    "*.acr",
+    "*.alg",
+    "*.glg",
+    "*.glo",
+    "*.gls",
+    "*.snm",
+    "*.nav",
+    "*.vrb",
+    "*.xdv",
+    "_minted-*/**",
+    "_minted-*/",
+    "*.auxlock"
+  ],
+  "latex-workshop.linting.chktex.enabled": true,
+  "latex-workshop.linting.lacheck.enabled": false,
+  "latex-workshop.linting.run": "onType",
+  "latex-workshop.formatting.latex": "latexindent",
+  "latex-workshop.formatting.latexindent.path": "latexindent",
+  "latex-workshop.formatting.latexindent.args": [
+    "-c",
+    "%DIR%/",
+    "%TMPFILE%",
+    "-y=defaultIndent: '%INDENT%'"
+  ],
+  "latex-workshop.texcount.autorun": "onSave",
+  "latex-workshop.texcount.args": [
+    "-merge",
+    "-inc",
+    "-total",
+    "-ch",
+    "-utf8"
+  ],
+  "latex-workshop.intellisense.update.aggressive.enabled": true,
+  "latex-workshop.intellisense.update.delay": 800,
+  "latex-workshop.hover.preview.enabled": true,
+  "latex-workshop.hover.ref.enabled": true,
+  "latex-workshop.hover.citation.enabled": true,
+  "latex-workshop.bind.enter.key": true,
+  "latex-workshop.view.outline.enabled": true,
+  "latex-workshop.view.outline.sections": [
+    "part",
+    "chapter",
+    "section",
+    "subsection",
+    "subsubsection",
+    "paragraph"
+  ],
+  "latex-workshop.view.outline.floats.enabled": true,
+  "latex-workshop.kpsewhich.bibtex.enabled": true,
+  "latex-workshop.kpsewhich.class.enabled": true,
+  "files.associations": {
+    "*.tex": "latex",
+    "*.cls": "latex",
+    "*.sty": "latex",
+    "*.bib": "bibtex"
+  }
+}
