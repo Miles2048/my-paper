@@ -37,54 +37,33 @@
 % 正文当中的其他定义
 \setmainfont{Times New Roman} % 英文字体使用Times New Roman
 \setmathfont{XITS Math} % 数学公式字体使用XITS Math
-
 \BUPTthesiscntitlepage{%
 	confidential = {公开}, % 目前只支持公开
-	title = {文章 \\ 标题 },  % 本章标题
-	studentid = {2021123456}, % 学号
-	name = {你的名字}, % 姓名
-	major = {专业名称}, % 专业名称
-	supervisor = {你的导师}, % 导师姓名
-	institute = {你的学院} % 单行学院的写法
-	%institute = {你的学院1\\你的学院2} % 双行学院的写法
+	title = {基于低成本无人机平台的非法低轨卫星终端定位识别算法研究},  % 本章标题
+	studentid = {2023140074}, % 学号
+	name = {石志鹏}, % 姓名
+	major = {通信工程}, % 专业名称
+	supervisor = {黄赛}, % 导师姓名
+	institute = {信息与通信工程学院} % 单行学院的写法
 }
 
-%% \quad 相当于一个汉字的宽度，同时也相当于~~~~
-
 \BUPTdateOptions{%
-    pageYear = {2024}, % 封面上面的年
-    pageMonth = {5}, % 封面上面的月
-    pageDay = {30}, % 封面上面的天
-    dissertationYear = {2024}, % 答辩时间的年
-    dissertationMonth = {5}, % 答辩时间的月
-    dissertationDay = {30} % 答辩时间的天
+    pageYear = {2026}, % 封面上面的年
+    pageMonth = {3}, % 封面上面的月
+    pageDay = {11}, % 封面上面的天
+    dissertationYear = {2026}, % 答辩时间的年
+    dissertationMonth = {3}, % 答辩时间的月
+    dissertationDay = {11} % 答辩时间的天
 }
 
 \BUPTthesisentitlepage{%
 	confidentialEN = {Public},  % 目前只支持公开
-	titleEN = {Thesis \\ Title}, % 本章标题
-	nameEN = {Your Name}, % 姓名
-	majorEN = {Your Major}, % 专业名称
-	supervisorEN = {Your Boss}, % 导师姓名
-	instituteEN = {Your Institute} % 学院名称
-	%instituteEN = {Your Institute1\\Your Institute2} % 双行学院的写法
+	titleEN = {Research on Localization and Identification Algorithms for Illegal LEO Satellite Terminals Based on Low-cost UAV Platforms}, % 本章标题
+	nameEN = {Zhipeng Shi}, % 姓名
+	majorEN = {Communication Engineering}, % 专业名称
+	supervisorEN = {Sai Huang}, % 导师姓名
+	instituteEN = {School of Information and Communication Engineering} % 学院名称
 }
-
-\BUPTdissertationcommitteepage{%
-	committeeChairName = {教授1}, % 主席名称
-	committeeChairTitle = {教授}, % 主席职称
-	committeeChairOrgan = {北京邮电大学}, % 主席单位
-	committeeMemberFirstName = {名称2}, % 委员1名称
-	committeeMemberFirstTitle = {教授},
-	committeeMemberFirstOrgan = {北京邮电大学},
-	committeeMemberSecondName = {名称3},
-	committeeMemberSecondTitle = {教授},
-	committeeMemberSecondOrgan = {北京邮电大学},
-	committeeSecretaryName = {名称4}, % 秘书名称
-	committeeSecretaryTitle = {副教授},
-	committeeSecretaryOrgan = {北京邮电大学},
-}
-% 最多支持四个委员，分别从First->Fourth，不指定参数就为空
 
 \begin{document}
 
@@ -95,11 +74,14 @@
 \include{Chapter/Chapter_enabstract} % 英文摘要
 \tableofcontents % 目录
 \include{Chapter/Chapter_nomeclature} % 符号表
-% \listoffigures % NOTE:20230103旧模板
-% \listoftables % NOTE:20230103旧模板
 
 \mainmatter
-\include{Chapter/Chapter_Example} % 正文样例章节
+\include{Chapter/Chapter_01_Introduction} % 第一章：绪论
+\include{Chapter/Chapter_02_Fundamentals} % 第二章：系统模型与理论基础
+\include{Chapter/Chapter_03_Single_Target_Localization} % 第三章：单目标射频指纹定位
+\include{Chapter/Chapter_04_Fusion_PADQN} % 第四章：基于物理感知强化学习的自适应融合定位
+\include{Chapter/Chapter_05_Multi_Target} % 第五章：基于热力图与视觉检测的多目标并发定位
+\include{Chapter/Chapter_06_Conclusion} % 第六章：结论与展望
 
 \bibliographystyle{gbt7714-numerical}
 {\zihao{5}
