@@ -1,5 +1,5 @@
-\documentclass[master,phil,fulltime,electronic,cenhdr,normaltoc,blind]{buptthesis} % 学硕电子版
-%\documentclass[master,phil,fulltime,print,cenhdr,normaltoc]{buptthesis} % 学硕印刷版
+\documentclass[master,eng,fulltime,electronic,cenhdr,normaltoc,blind]{buptthesis} % 专硕电子版
+%\documentclass[master,phil,fulltime,electronic,cenhdr,normaltoc,blind]{buptthesis} % 学硕电子版
 %\documentclass[master,eng,fulltime,electronic,cenhdr,normaltoc]{buptthesis} % 专硕电子版
 %\documentclass[master,eng,fulltime,print,cenhdr,normaltoc]{buptthesis} % 专硕印刷版
 %\documentclass[phd,phil,fulltime,electronic,cenhdr,normaltoc]{buptthesis} % 学博电子版
@@ -77,11 +77,11 @@
 
 \mainmatter
 \include{Chapter/Chapter_01_Introduction} % 第一章：绪论
-\include{Chapter/Chapter_02_Fundamentals} % 第二章：系统模型与理论基础
-\include{Chapter/Chapter_03_Single_Target_Localization} % 第三章：单目标射频指纹定位
-\include{Chapter/Chapter_04_Fusion_PADQN} % 第四章：基于物理感知强化学习的自适应融合定位
-\include{Chapter/Chapter_05_Multi_Target} % 第五章：基于热力图与视觉检测的多目标并发定位
-\include{Chapter/Chapter_06_Conclusion} % 第六章：结论与展望
+\include{Chapter/Chapter_02_Fundamentals} % 第二章：系统模型与定位理论基础
+% 原第三章（单目标射频指纹定位）已被精简整合，故移除独立章节
+\include{Chapter/Chapter_04_Fusion} % 第三章：基于物理感知深度强化学习的单目标自适应融合定位方法
+\include{Chapter/Chapter_05_Multi_Target} % 第四章：基于信号成像与跨模态视觉检测的多目标并发定位方法
+\include{Chapter/Chapter_06_Conclusion} % 第五章：结论与展望
 
 \bibliographystyle{gbt7714-numerical}
 {\zihao{5}

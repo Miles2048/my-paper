@@ -1,166 +1,720 @@
-\chapter{基于物理感知深度强化学习的自适应多模态融合定位}
+\chapter{基于物理感知深度强化学习的单目标自适应融合定位方法}
+\label{ch:single_target_fusion}
 
-\section{引言}
+\section{问题描述与总体框架}
+\label{sec:3_1}
 
-% TODO: 本章研究动机
-% - 承接第三章：单模态定位（RSSI/AoA/PDR）各自的局限性
-% - 现有融合方法的"物理感知缺失"问题
-%   - EKF：依赖静态噪声模型，NLOS场景下滤波器发散
-%   - 标准RL：状态空间仅依赖浅层统计特征，无法感知多径时延等物理特征
-% - 本章创新点预告：PA-DQN物理感知融合框架
+\subsection{单目标定位任务定义与场景约束}
+\label{subsec:3_1_1}
 
-\section{PA-DQN自适应融合框架}
+本文研究的场景是：在复杂城市环境下，利用低成本无人机平台对地面非法低轨卫星终端进行非合作式无源单目标连续定位。与常规通信系统中的合作式定位不同，目标终端通常不提供同步辅助、位置信息或协议配合，无人机平台只能依赖接收到的目标相关多源观测信息对其位置进行估计。因此，本章所讨论的问题本质上属于复杂环境约束下的非合作式无源定位问题，其定位输出采用二维平面坐标形式，重点关注单目标连续轨迹的定位精度、轨迹平滑性以及对环境扰动的鲁棒性。
 
-\subsection{系统总体架构}
+复杂城市环境中的高层建筑、狭窄街道以及大量反射界面会引起显著的非视距传播和多径效应，使得不同观测量的有效性随时间和空间持续变化。一方面，RSSI 易受局部遮挡、阴影衰落和快衰落影响，导致其与传播距离之间的映射关系失稳；另一方面，AoA 在强反射环境中容易偏离真实来波方向，而 PDR 虽然具有较好的短时平滑性，却会因惯性误差累积而在长时间尺度上逐渐偏离真实轨迹。上述现象表明，在复杂城市环境中，不同观测量之间并不存在固定不变的优劣关系，其可靠性会随着传播条件、遮挡状态和目标运动过程动态波动。因此，采用固定权重或静态融合规则难以适应复杂场景中的快速状态切换，这也是传统融合方法在实际排查任务中性能受限的重要原因。
 
-% TODO:
-% - 三阶段流程：多源传感与特征提取 → DQN决策 → 加权融合
-% - 系统架构图（参考小论文Figure 1）
-% - 三个独立定位模块（RSSI、AoA、PDR）的输出
+基于上述分析，本章不再将单目标定位问题简单地视为多个观测量的线性组合问题，而是将其归结为一个面向动态环境的自适应融合决策问题。具体而言，本章关注的是：在复杂传播环境和多源异构观测条件下，如何根据信道状态和观测质量的实时变化，自适应地调整不同信息源的融合权重，从而获得稳定、连续且高精度的定位结果。围绕这一目标，本文后续将引入物理感知状态空间与深度强化学习决策机制，对单目标非法终端的动态融合定位进行研究。图~\ref{fig:single_target_scenario} 给出了本章所针对的单目标定位场景示意图。
 
-\subsection{多源异构数据线性融合模型}
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.78\textwidth]{figures/ch3_single_target_scenario.pdf}
+    \vspace{4.2cm}
+    \caption{复杂城市环境下基于低成本无人机平台的单目标非法终端定位场景示意图}
+    \label{fig:single_target_scenario}
+\end{figure}
 
-% TODO:
-% 融合位置 P^{Fused}_t = ω^{RSSI}_t · P^{RSSI}_t + ω^{AoA}_t · P^{AoA}_t + ω^{PDR}_t · P^{PDR}_t
-% 权重向量 ω_t = [ω^{RSSI}_t, ω^{AoA}_t, ω^{PDR}_t]^T
-% 归一化约束 Σω^i_t = 1
-% 权重分配问题的数学形式化
+\subsection{多源异构定位信息加权融合模型}
+\label{subsec:3_1_2}
 
-\subsection{马尔可夫决策过程建模}
+为充分利用不同观测量之间的互补性，本文采用多源异构信息融合框架，将 RSSI、AoA 和 PDR 三类定位结果作为基础输入。之所以选择这三类观测，是因为它们分别从不同层面刻画目标位置特征：RSSI 反映信号功率层面的空间变化信息，AoA 提供几何方向约束，而 PDR 则利用惯性测量信息表征目标运动过程中的短时连续性。三者在信息来源和误差机理上具有明显差异，能够形成较强互补；但与此同时，其可靠性也会随着传播环境和运动状态变化而动态波动。因而，如何在不同场景下合理利用三类观测的优势，是实现稳定定位的关键。
 
-% TODO:
-% - 将融合权重优化问题建模为MDP
-% - MDP五元组定义
-% - 与传统静态优化方法的区别
+为统一不同观测来源的输出形式，本文首先将各模块原始观测转换为对应的位置估计结果，再在位置层面进行加权融合。设在时刻 \(t\)，RSSI、AoA 和 PDR 模块分别给出位置估计 \(P_t^{\mathrm{RSSI}}\)、\(P_t^{\mathrm{AoA}}\) 和 \(P_t^{\mathrm{PDR}}\)，则最终融合结果可建模为
+\begin{equation}
+P_t^{\mathrm{Fused}}
+=
+\omega_t^{\mathrm{RSSI}} P_t^{\mathrm{RSSI}}
++
+\omega_t^{\mathrm{AoA}} P_t^{\mathrm{AoA}}
++
+\omega_t^{\mathrm{PDR}} P_t^{\mathrm{PDR}},
+\label{eq:3_1_fusion_model}
+\end{equation}
+其中，\(\omega_t=[\omega_t^{\mathrm{RSSI}},\omega_t^{\mathrm{AoA}},\omega_t^{\mathrm{PDR}}]^T\) 为时刻 \(t\) 的权重向量，并满足归一化约束
+\begin{equation}
+\omega_t^{\mathrm{RSSI}}+\omega_t^{\mathrm{AoA}}+\omega_t^{\mathrm{PDR}}=1.
+\label{eq:3_2_weight_constraint}
+\end{equation}
 
-\section{物理感知状态空间设计}
+上述模型的优势在于形式直观、实现简单，并且能够显式体现不同信息源在不同环境下的贡献差异。然而，该模型真正的难点并不在于融合形式本身，而在于权重 \(\omega_t\) 的动态确定机制。若采用固定权重，则模型难以适应复杂城市环境中瞬时变化的多径、遮挡和观测退化；若采用传统滤波器，则仍需依赖较强的噪声模型假设和先验统计条件，难以准确刻画非平稳环境中的观测质量波动。
 
-\subsection{物理层特征：RMS时延扩展}
+进一步地，权重分配不仅依赖当前时刻不同观测量的质量，还与前一时刻的融合状态、轨迹连续性以及环境变化趋势相关。因此，该问题本质上并非一个静态参数估计问题，而是一个面向动态环境的序列决策问题。基于这一认识，本文不采用静态权重或人工规则，而是将权重生成过程交由智能体动态决策，并在下一小节中进一步将其建模为马尔可夫决策过程，为后续强化学习求解奠定基础。
 
-% TODO:（核心创新，需详细推导）
-% - σ_τ 的数学定义与物理意义
-% - 射线追踪先验下σ_τ与多径严重程度的关系
-% - 前瞻性预判能力：σ_τ增大 → 预示AoA/ToA几何假设失效
-% - 与传统后验误差特征的本质区别
+\subsection{面向动态信道的马尔可夫决策过程建模}
+\label{subsec:3_1_3}
 
-\subsection{信号层特征：RSSI方差}
+由式~\eqref{eq:3_1_fusion_model} 可知，多源异构定位信息融合的关键在于权重向量 \(\omega_t\) 的动态确定。然而，在复杂城市环境中，这一权重分配过程并不是一个静态参数优化问题，而是一个具有显著时序性的动态决策问题。其原因在于：当前时刻的融合决策不仅依赖于当前环境状态和观测质量，还会进一步影响下一时刻的融合结果、误差传播以及轨迹连续性。换言之，在单目标连续定位过程中，系统的决策具有明显的“当前状态—当前动作—未来结果”链式关联，这使得多源融合过程天然具备序列决策特征。
 
-% TODO:
-% - σ²_RSSI 的定义（滑动窗口W=10-30）
-% - 量化信道瞬时快衰落强度
-% - 反映信号质量的实时波动性
+具体而言，在复杂城市环境下，目标终端在运动过程中会不断经历视距（LOS）与非视距（NLOS）条件切换，RSSI、AoA 和 PDR 三类观测的可靠性也会随之动态变化。当智能体在某一时刻提高某一观测源的融合权重时，该动作不仅会改变当前时刻的融合位置输出，还会通过影响轨迹连续性、误差累积和后续状态演化，对下一时刻的决策产生作用。例如，在强反射环境下若仍赋予 AoA 过高权重，则会导致当前定位偏差增大，并使得下一时刻的几何一致性特征和轨迹误差进一步恶化；相反，若在 RSSI波动显著且 RMS 时延扩展快速升高时提前降低无线观测权重，则有助于抑制误差扩散并维持轨迹平滑性。因此，本章所研究的问题不是单步最优加权，而是在动态环境中根据状态演化持续更新最优策略的问题。
 
-\subsection{系统层特征：几何一致性}
+基于上述分析，本文将该动态融合过程抽象为马尔可夫决策过程（Markov Decision Process, MDP）。在这一框架下，智能体在每一时刻观测系统状态 \(S_t\)，并据此选择动作 \(a_t\)，动作执行后产生即时奖励 \(r_t\)，同时系统演化到下一状态 \(S_{t+1}\)。其中，状态用于刻画当前时刻的环境与观测条件，动作对应融合权重的更新策略，奖励则用于衡量当前决策在定位精度和轨迹平滑性方面的综合效果。只要当前决策所需的主要信息能够由当前状态向量近似表征，就可以将该问题视为一个近似满足马尔可夫性的序列决策问题。
 
-% TODO:
-% - D_{RF-PDR} = ||P_{RF} - P_{PDR}||_2
-% - 利用PDR短时平滑特性对RF结果后验校验
-% - 作为物理感知失效时的兜底机制
+为了形式化描述上述过程，本文将该问题表示为一个五元组
+\begin{equation}
+\mathcal{M}=\langle \mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma \rangle,
+\label{eq:3_3_mdp_tuple}
+\end{equation}
+其中，\(\mathcal{S}\) 表示状态空间，\(\mathcal{A}\) 表示动作空间，\(\mathcal{P}\) 表示状态转移概率，\(\mathcal{R}\) 表示奖励函数，\(\gamma\in[0,1]\) 为折扣因子。对于本文而言，状态空间 \(\mathcal{S}\) 用于描述复杂传播环境下的物理信道状态、观测统计特征及融合历史信息；动作空间 \(\mathcal{A}\) 用于表示不同的权重更新策略；奖励函数 \(\mathcal{R}\) 则用于刻画当前融合决策对定位效果的优劣。
 
-\subsection{状态向量的分层设计分析}
+在该建模下，智能体的目标是学习一个最优策略 \(\pi^*\)，使得从任意状态出发时的长期累计回报最大化。对应的状态—动作价值函数可表示为
+\begin{equation}
+Q^{\pi}(s,a)
+=
+\mathbb{E}_{\pi}
+\left[
+\sum_{k=0}^{\infty}\gamma^k r_{t+k}
+\,\middle|\,
+S_t=s,\; a_t=a
+\right].
+\label{eq:3_4_q_definition}
+\end{equation}
+式~\eqref{eq:3_4_q_definition} 表明，当前动作的优劣不仅由即时奖励决定，还取决于该动作对未来一系列状态演化和奖励累积的长期影响。这一点与本文所研究的连续轨迹定位任务高度一致，因为单次权重更新往往会影响后续多个时刻的定位误差和轨迹平滑性。
 
-% TODO:
-% - 三层特征的互补关系分析
-% - 状态向量 S_t = [σ_τ, σ²_{RSSI}, D_{RF-PDR}, ω_{t-1}]^T
-% - 引入ω_{t-1}提供时序信息
+依据 Bellman 最优性原理，最优状态—动作价值函数满足
+\begin{equation}
+Q^*(s,a)
+=
+\mathbb{E}
+\left[
+r_t+\gamma \max_{a'}Q^*(s',a')
+\,\middle|\,
+s,a
+\right].
+\label{eq:3_5_bellman}
+\end{equation}
+在实际求解中，本文采用深度 Q 网络对 \(Q^*(s,a)\) 进行近似。其核心思想是利用神经网络建立从状态到动作价值的映射，并通过经验回放和目标网络机制实现稳定训练。对应的参数更新损失可写为
+\begin{equation}
+L(\theta)
+=
+\mathbb{E}_{(s,a,r,s')\sim D}
+\left[
+\left(
+y_i-Q(s,a;\theta)
+\right)^2
+\right],
+\quad
+y_i=r+\gamma\max_{a'}Q(s',a';\theta^-),
+\label{eq:3_6_dqn_loss}
+\end{equation}
+其中，\(D\) 为经验回放池，\(\theta\) 为当前网络参数，\(\theta^-\) 为目标网络参数。
 
-\section{增量式动作空间与积分控制机制}
+需要指出的是，本文并非将强化学习作为一般性的权重调节工具，而是将复杂城市环境下的多源定位融合过程视为一个随环境状态演化而不断更新的序列决策问题。在该问题中，传播条件具有明显的时变特性，不同观测量的可靠性会随遮挡、多径和目标运动过程发生变化，当前时刻的权重分配不仅决定当前定位结果，也会影响后续轨迹误差的传播特性。基于上述特点，采用马尔可夫决策过程对融合定位问题进行建模具有明确的合理性。在此基础上，后文将进一步分别构建 RL-IFA 基线算法与 PA-DQN 物理感知强化学习方法，并比较基于后验误差驱动的决策机制与引入物理先验后的决策机制在定位性能上的差异。图~\ref{fig:mdp_modeling_framework} 给出了本章单目标自适应融合定位问题的 MDP 建模示意图。
 
-\subsection{增量动作空间设计}
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.82\textwidth]{figures/ch3_mdp_modeling_framework.pdf}
+    \vspace{4.2cm}
+    \caption{单目标自适应融合定位问题的马尔可夫决策过程建模示意图}
+    \label{fig:mdp_modeling_framework}
+\end{figure}
 
-% TODO:
-% - 动作定义：ω_t ← ω_{t-1} + Δ（Δ为±0.05步长）
-% - 动作集合：对各分量的增、减、保持操作
+\section{复杂环境观测构造与物理先验信息提取}
+\label{sec:3_2}
 
-\subsection{积分控制等价性分析}
+\subsection{射线追踪场景建模与环境先验获取}
+\label{subsec:3_2_1}
 
-% TODO:
-% - 与积分控制器的数学等价性推导
-% - 低通滤波特性：抑制权重剧烈变化 → 保证轨迹平滑
-% - 与直接输出权重的对比分析
+为了建立观测波动与环境成因之间的对应关系，本文引入基于射线追踪的高保真场景建模方法，用于构造复杂城市环境中的传播先验信息。对于本章所研究的单目标连续定位任务而言，强化学习模型的训练与评估不仅需要大量可重复的交互样本，还要求在不同轨迹、不同信噪比以及不同视距/非视距切换条件下获得可控且带有真值标注的数据。然而，在真实城市环境中，大规模采集同时满足“多轨迹、可控环境切换、精确位置真值和多种信道状态”的连续定位数据代价较高，且实验可重复性有限。因此，本文采用“真实地理数据建模 + 射线追踪传播仿真”的方式构建复杂城市环境下的训练与测试场景，以兼顾物理一致性、样本规模和实验可控性。
 
-\section{物理引导的双重奖励函数}
+在场景建模阶段，本文首先利用 OpenStreetMap（OSM）导出的真实地理信息数据，获取目标区域内建筑物的平面轮廓、高度信息及空间分布关系，并在 MATLAB Site Viewer 环境中完成三维城市几何场景重建。为了尽可能逼近真实传播条件，建模区域选取北京市典型建筑密集街区作为原型场景，通过将建筑物几何轮廓映射到三维坐标系中，形成包含高层建筑、街道走廊和开阔区域的城市峡谷环境。该建模过程为后续电磁传播仿真提供了几何基础，也使得不同位置的传播差异能够与真实城市结构建立对应关系。
 
-\subsection{精度奖励项设计}
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.82\textwidth]{figures/ch3_osm_city_model.pdf}
+    \vspace{4.2cm}
+    \caption{基于 OSM 数据的复杂城市三维场景建模示意图}
+    \label{fig:ch3_osm_city_model}
+\end{figure}
 
-% TODO:
-% - r_accuracy = exp(-k · ||P_{GT} - P_{Fused}||)
-% - k为精度敏感度系数
+\subsection{多源观测量生成与特征表达}
+\label{subsec:3_2_2}
 
-\subsection{稳定性惩罚项设计}
+在本章所构建的自适应融合定位框架中，系统并不直接以原始射频观测作为最终输入，而是将不同来源的观测信息分别转化为可用于定位的初步估计结果，并在此基础上完成后续的动态加权融合。关于 RSSI、AoA 以及 PDR 等观测量的获取方式、基本测量机理和定位模型，前文第二章已经进行了讨论。因此，本节不再重复展开各类观测的底层测量过程，而是在前述理论基础上，重点说明 RSSI、AoA 和 PDR 三类异构观测在本章中的生成形式、表达方式及其在融合框架中的作用。
 
-% TODO:
-% - r_stability = -λ · ||ω_t - ω_{t-1}||
-% - λ为平滑惩罚系数
+结合当前研究基础，本文选取 RSSI、AoA 和 PDR 三类观测作为主要输入源。其原因在于：RSSI 能够反映信号功率层面的空间变化特征，AoA 提供几何方向约束，而 PDR 则利用惯性信息表征目标短时运动连续性。三者分别对应功率域、几何域和运动域信息，具有较强互补性，能够共同描述复杂城市环境下单目标定位所需的多维特征。然而，这三类观测在可靠性上并不存在固定不变的优劣关系，而是会随着传播条件、遮挡状态和目标运动过程持续变化，因此需要在统一框架下对其进行动态融合。
 
-\subsection{PDR累积漂移自校正机制}
+需要指出的是，本文对三类观测的使用包含两条并行数据链路。第一条为定位输出链，即 RSSI、AoA 和 PDR 模块分别根据各自观测模型输出初步位置估计 \(P_t^{\mathrm{RSSI}}\)、\(P_t^{\mathrm{AoA}}\) 和 \(P_t^{\mathrm{PDR}}\)，并作为后续加权融合模块的直接输入。第二条为状态构造链，即各模块在生成初步位置估计的同时，保留其原始观测数据或中间统计量，并与上一节得到的环境先验共同送入物理感知特征提取器，用于构造强化学习智能体的状态向量。也就是说，本节中的多源观测不仅服务于位置解算，还承担了状态感知输入的功能，这是本章区别于传统静态融合方法的重要特点。
 
-% TODO:
-% - 尽管PDR存在累积误差，但奖励函数与P_{GT}关联
-% - 智能体学习在LOS区域提升RF权重，校正PDR漂移
-% - 长尺度轨迹准确性保证
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.84\textwidth]{figures/ch3_multi_source_observation_flow.pdf}
+    \vspace{4.2cm}
+    \caption{多源观测生成与融合输入构造流程示意图}
+    \label{fig:multi_source_observation_flow}
+\end{figure}
 
-\section{基于射线追踪的仿真预训练策略}
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.84\textwidth]{figures/ch3_parallel_observation_state_chain.pdf}
+    \vspace{4.2cm}
+    \caption{定位输出链与状态构造链的并行结构关系示意图}
+    \label{fig:multi_source_parallel_chain}
+\end{figure}
 
-% TODO:
-% - 数字孪生训练环境构建
-% - 离线训练流程：智能体在仿真环境中大规模交互
-% - 学习物理规律（σ_τ增大 → 多径干扰加剧）
-% - DQN网络结构与训练超参数
+\subsection{RMS 时延扩展与几何一致性特征构造}
+\label{subsec:3_2_3}
 
-\section{实验结果与分析}
+为了使强化学习智能体能够在定位误差显著累积之前感知环境变化，本文并未仅依赖后验定位误差或当前融合结果构造状态空间，而是进一步引入能够反映传播机理、观测稳定性和系统几何一致性的多层状态特征。基于这一认识，本文构建由物理层特征、统计层特征、几何层特征以及历史决策信息共同组成的分层状态表示。
 
-\subsection{仿真平台与实验配置}
+首先，本文选取 RMS 时延扩展 \(\sigma_\tau\) 作为表征多径复杂度的核心物理层特征。该特征来源于上一节射线追踪场景建模得到的路径级传播参数，能够反映接收信号在时延域上的离散程度。RMS 时延扩展定义为
+\begin{equation}
+\sigma_\tau=
+\sqrt{
+\frac{\sum_{n=1}^{N} |\alpha_n|^2 (\tau_n-\bar{\tau})^2}
+{\sum_{n=1}^{N} |\alpha_n|^2}
+},
+\label{eq:3_8_rms_delay}
+\end{equation}
+其中，\(N\) 为有效多径分量数，\(\alpha_n\) 和 \(\tau_n\) 分别表示第 \(n\) 条路径的幅度和绝对时延，\(\bar{\tau}\) 为功率加权平均时延。
 
-% TODO:
-% - Python仿真平台
-% - 四种典型城市轨迹：对角线、反对角线、矩形、随机游走
-% - 总里程超过2公里
-% - LOS→NLOS→LOS环境切换设置
+其次，为刻画接收功率在时间上的波动程度，本文引入 RSSI 方差 \(\sigma^2_{\mathrm{RSSI}}\) 作为统计层特征。设在长度为 \(W\) 的滑动窗口内，接收功率序列为 \(\{RSSI_k\}\)，则其方差定义为
+\begin{equation}
+\sigma^2_{\mathrm{RSSI}}
+=
+\frac{1}{W}
+\sum_{k=t-W+1}^{t}
+\left(
+RSSI_k-\overline{RSSI}_t
+\right)^2,
+\label{eq:3_9_rssi_var}
+\end{equation}
+其中，\(\overline{RSSI}_t\) 为窗口内平均接收功率。
 
-\subsection{整体性能对比}
+进一步地，为利用轨迹连续性对无线观测结果进行系统层约束，本文构造几何一致性特征 \(D_{\mathrm{RF-PDR}}\)。其中，\(P_{\mathrm{RF}}\) 表示当前时刻由无线电侧得到的位置估计结果，\(P_{\mathrm{PDR}}\) 表示由惯性递推获得的 PDR 位置估计。两者之间的欧氏距离定义为
+\begin{equation}
+D_{\mathrm{RF-PDR}}
+=
+\|P_{\mathrm{RF}}-P_{\mathrm{PDR}}\|_2
+=
+\sqrt{
+(x_{\mathrm{RF}}-x_{\mathrm{PDR}})^2
++
+(y_{\mathrm{RF}}-y_{\mathrm{PDR}})^2
+},
+\label{eq:3_10_geo_consistency}
+\end{equation}
 
-% TODO: 表格
-% | 算法         | RMSE (m) | P95 Error (m) |
-% | PDR-only     | 12.83    | 21.45         |
-% | AoA-only     | 15.21    | 25.88         |
-% | EKF          | 7.34     | 13.02         |
-% | Q-Learning   | 5.91     | 10.56         |
-% | PA-DQN       | 2.15     | 3.87          |
-% vs EKF提升70.7%，vs Q-Learning提升63.6%
+在上述基础上，本文将物理层特征、统计层特征、几何层特征与上一时刻权重向量共同组合，形成当前时刻的物理感知状态向量
+\begin{equation}
+S_t=
+\left[
+\sigma_\tau,\,
+\sigma^2_{\mathrm{RSSI}},\,
+D_{\mathrm{RF-PDR}},\,
+\omega_{t-1}
+\right]^T,
+\label{eq:3_11_state_vector}
+\end{equation}
+其中，\(\omega_{t-1}\) 表示上一时刻的融合权重。图~\ref{fig:ch3_physics_aware_state_space} 给出了物理感知状态空间构成示意图。
 
-\subsection{典型路径下的轨迹跟踪分析}
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.84\textwidth]{figures/ch3_physics_aware_state_space.pdf}
+    \vspace{4.2cm}
+    \caption{物理感知状态空间构成示意图}
+    \label{fig:ch3_physics_aware_state_space}
+\end{figure}
 
-% TODO:
-% - 四种路径下各算法轨迹对比图（参考小论文Figure 2）
-% - 定性分析：PA-DQN与真实轨迹高度一致
+\section{基于 Q-Learning 的 RL-IFA 基线自适应融合算法}
+\label{sec:3_3}
 
-\subsection{不同信噪比下的鲁棒性验证}
+\subsection{状态空间设计}
+\label{subsec:3_3_1}
 
-% TODO:
-% - SNR变化下各算法RMSE曲线（参考小论文Figure 3）
-% - PA-DQN曲线最平缓，低SNR下仍保持低RMSE
+为考察物理感知状态构造对融合定位性能的影响，本文首先构建一种不显式引入传播环境先验的强化学习信息融合算法，记为基于强化学习的信息融合算法（Reinforcement Learning-based Information Fusion Algorithm, RL-IFA），并将其作为后续 PA-DQN 方法的基线模型。RL-IFA 的基本思想是：在多源观测融合过程中，将当前融合结果的定位误差作为状态反馈量，利用 Q-Learning 学习不同观测量之间的权重调整策略，从而实现自适应融合定位。
 
-\subsection{消融实验}
+与后续 PA-DQN 的物理感知状态空间不同， RL-IFA 并不对多径结构、观测稳定性或几何一致性进行显式建模，而仅依据当前融合结果与真实位置之间的偏差来刻画系统状态。设时刻 $t$ 的融合定位结果为
+$P_t^{\mathrm{Fused}}=(x_t^{\mathrm{Fused}},y_t^{\mathrm{Fused}})$,
+对应真实位置为
+$P_t^{\mathrm{GT}}=(x_t^{\mathrm{GT}},y_t^{\mathrm{GT}})$,
+则当前时刻的融合误差定义为
+\begin{equation}
+\varepsilon_t
+=
+\left\|P_t^{\mathrm{Fused}}-P_t^{\mathrm{GT}}\right\|_2
+=
+\sqrt{
+\left(x_t^{\mathrm{GT}}-x_t^{\mathrm{Fused}}\right)^2
++
+\left(y_t^{\mathrm{GT}}-y_t^{\mathrm{Fused}}\right)^2
+}.
+\label{eq:3_12_rlifa_error}
+\end{equation}
 
-% TODO: 表格
-% | 模型变体                | RMSE (m) | Stability |
-% | Full PA-DQN             | 2.15     | 0.04      |
-% | w/o Physics-Aware State | 6.89     | 0.09      |
-% | w/o Incremental Action  | 4.52     | 0.28      |
-% | w/o Stability Reward    | 2.48     | 0.17      |
-% 分析各组件独立贡献
+式~\eqref{eq:3_12_rlifa_error} 所定义的误差量直接反映了当前融合策略下的定位效果，因此可作为强化学习决策的后验反馈依据。考虑到经典 Q-Learning 通常在离散状态空间中实现，为控制状态空间规模并提高训练可行性，本文对连续误差 \(\varepsilon_t\) 进行离散化处理。参考相关研究中对融合误差状态化的处理方式，本文将误差区间 \([0,1)\,\mathrm{m}\) 均匀划分为 100 个离散状态，并将大于等于 1 m 的误差统一映射为终端状态。于是，时刻 \(t\) 的状态 \(s_t\) 定义为
+\begin{equation}
+s_t=
+\begin{cases}
+\mathrm{round}(100\,\varepsilon_t), & 0 \leq \varepsilon_t < 1,\\
+100, & \varepsilon_t \geq 1.
+\end{cases}
+\label{eq:3_13_rlifa_state}
+\end{equation}
 
-\subsection{融合权重动态变化分析}
+上述状态定义方式具有两方面特点。其一，状态的构造仅依赖融合结果与真实位置之间的后验误差，因而实现简单，便于形成标准 Q-Learning 基线；其二，状态编号随误差大小单调变化，从而能够较直接地反映当前融合效果的优劣。图~\ref{fig:rlifa_state_design} 给出了 RL-IFA 基线算法中基于融合误差的状态空间设计示意图。
 
-% TODO:（建议新增实验）
-% - 展示在LOS/NLOS切换时，三个权重的动态变化曲线
-% - 证明智能体能自适应感知环境变化
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.80\textwidth]{figures/ch3_rlifa_state_design.pdf}
+    \vspace{4.2cm}
+    \caption{RL-IFA 基线算法中基于融合误差的状态空间设计示意图}
+    \label{fig:rlifa_state_design}
+\end{figure}
+
+\subsection{动作空间设计}
+\label{subsec:3_3_2}
+
+在 RL-IFA 基线算法中，动作空间的作用是根据当前状态对多源观测的融合权重进行更新。由于本文采用 Q-Learning 进行求解，为保证动作集合有限且便于训练实现，本文对权重调整过程进行离散化处理。具体而言，动作并不直接给出新的连续权重值，而是规定在当前时刻对各观测源权重执行“增加”“减小”或“保持不变”三类基本操作。通过这种方式，多源融合权重优化问题可被转化为有限动作空间下的离散决策问题。
+
+考虑到三类观测的融合权重满足归一化约束
+\begin{equation}
+\omega_t^{\mathrm{RSSI}}+\omega_t^{\mathrm{AoA}}+\omega_t^{\mathrm{PDR}}=1,
+\label{eq:3_14_rlifa_weight_constraint}
+\end{equation}
+因此，在动作设计中无须对三个权重同时独立更新。为降低动作空间维数并避免冗余组合，本文仅对 \(\omega_t^{\mathrm{RSSI}}\) 和 \(\omega_t^{\mathrm{AoA}}\) 施加离散动作，第三个权重 \(\omega_t^{\mathrm{PDR}}\) 由归一化约束自动确定。
+
+设权重更新步长参数为 \(\kappa\)，则对任一可调权重 \(\omega_t^{x}\)（其中 \(x \in \{\mathrm{RSSI},\mathrm{AoA}\}\)），其更新规则定义为
+\begin{equation}
+\omega_{t+1}^{x}=
+\begin{cases}
+(1+\kappa)\omega_t^{x}, & \text{若执行增加动作},\\[4pt]
+(1-\kappa)\omega_t^{x}, & \text{若执行减小动作},\\[4pt]
+\omega_t^{x}, & \text{若执行保持动作}.
+\end{cases}
+\label{eq:3_15_rlifa_weight_update}
+\end{equation}
+在得到 \(\omega_{t+1}^{\mathrm{RSSI}}\) 和 \(\omega_{t+1}^{\mathrm{AoA}}\) 后，由式~\eqref{eq:3_14_rlifa_weight_constraint} 可进一步计算
+\begin{equation}
+\omega_{t+1}^{\mathrm{PDR}}
+=
+1-\omega_{t+1}^{\mathrm{RSSI}}-\omega_{t+1}^{\mathrm{AoA}}.
+\label{eq:3_16_rlifa_pdr_weight}
+\end{equation}
+
+基于上述定义，本文将 RL-IFA 的动作空间构造为 9 个离散动作，即对 \(\omega^{\mathrm{RSSI}}\) 和 \(\omega^{\mathrm{AoA}}\) 分别执行“增加 / 减小 / 保持”三类操作后形成的组合集合：
+\begin{equation}
+\mathcal{A}
+=
+\left\{
+a_1,a_2,\ldots,a_9
+\right\}.
+\label{eq:3_17_rlifa_action_set}
+\end{equation}
+这 9 个动作的具体定义如表~\ref{tab:rlifa_action_space} 所示。
+
+\begin{table}[htbp]
+    \centering
+    \caption{RL-IFA 基线算法中离散动作空间定义}
+    \label{tab:rlifa_action_space}
+    \begin{tabular}{cccc}
+        \toprule
+        \textbf{动作编号} & \(\boldsymbol{\omega^{\mathrm{RSSI}}}\) \textbf{更新} & \(\boldsymbol{\omega^{\mathrm{AoA}}}\) \textbf{更新} & \(\boldsymbol{\omega^{\mathrm{PDR}}}\) \textbf{更新方式} \\
+        \midrule
+        \(a_1\) & 增加 & 增加 & 由归一化约束计算 \\
+        \(a_2\) & 增加 & 减小 & 由归一化约束计算 \\
+        \(a_3\) & 增加 & 保持 & 由归一化约束计算 \\
+        \(a_4\) & 减小 & 增加 & 由归一化约束计算 \\
+        \(a_5\) & 减小 & 减小 & 由归一化约束计算 \\
+        \(a_6\) & 减小 & 保持 & 由归一化约束计算 \\
+        \(a_7\) & 保持 & 增加 & 由归一化约束计算 \\
+        \(a_8\) & 保持 & 减小 & 由归一化约束计算 \\
+        \(a_9\) & 保持 & 保持 & 由归一化约束计算 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+图~\ref{fig:rlifa_action_design} 给出了 RL-IFA 基线算法中动作空间与权重更新关系的示意图。
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.82\textwidth]{figures/ch3_rlifa_action_design.pdf}
+    \vspace{4.2cm}
+    \caption{RL-IFA 基线算法中动作空间与权重更新关系示意图}
+    \label{fig:rlifa_action_design}
+\end{figure}
+
+\subsection{奖励函数设计}
+\label{subsec:3_3_3}
+
+在 RL-IFA 中，状态用于描述当前融合结果的误差水平，动作用于调整各观测分支的权重分配，而奖励函数则负责评价该次权重调整是否有利于定位结果改善。由于基线算法的目标是验证强化学习在多源异构观测融合中的有效性，因此本节奖励设计首先围绕定位精度展开，即将融合输出与真实位置之间的偏差作为策略优劣的直接判据。
+
+设第 \(k\) 个时刻获取的三类定位观测分支经加权融合后计算得到的位置估计为
+\(\hat{\mathbf{p}}_k^{\mathrm{Fused}}=[\hat{x}_k^{\mathrm{Fused}},\hat{y}_k^{\mathrm{Fused}}]^T\),
+对应真实位置为
+\(\mathbf{p}_k^{\mathrm{GT}}=[x_k^{\mathrm{GT}},y_k^{\mathrm{GT}}]^T\),
+则融合定位误差可写为
+\begin{equation}
+e_k=\left\|\hat{\mathbf{p}}_k^{\mathrm{Fused}}-\mathbf{p}_k^{\mathrm{GT}}\right\|_2
+=\sqrt{\left(\hat{x}_k^{\mathrm{Fused}}-x_k^{\mathrm{GT}}\right)^2+
+\left(\hat{y}_k^{\mathrm{Fused}}-y_k^{\mathrm{GT}}\right)^2 }.
+\label{eq:rlifa_reward_error}
+\end{equation}
+
+考虑到 Q-Learning 采用表格式价值迭代进行策略更新，奖励函数不宜设计得过于复杂。本文采用与定位误差倒数相关的分段奖励形式：
+\begin{equation}
+r_k=
+\begin{cases}
+100, & e_k=0,\\[4pt]
+\mathrm{round}\!\left(\dfrac{100}{e_k}\right), & 0<e_k<1,\\[8pt]
+-100, & e_k\geq 1.
+\end{cases}
+\label{eq:rlifa_reward}
+\end{equation}
+
+式~\eqref{eq:rlifa_reward} 的设计与前述状态离散方式保持一致。当融合误差较小时，奖励值取正，且误差越小，奖励越大；当误差达到或超过 \(1\,\mathrm{m}\) 后，给予固定负奖励。
+
+\subsection{权重更新机制}
+\label{subsec:3_3_4}
+
+在完成状态空间、动作空间与奖励函数定义后，RL-IFA 的核心问题可进一步归结为：智能体如何依据当前误差状态选择合适动作，并将该动作映射为对融合权重的实际更新，从而在连续交互过程中逐步学习得到更优的加权融合策略。与固定权重方法不同，RL-IFA 并不预先假设 RSSI、AoA 和 PDR 三类观测在全局范围内具有恒定的重要性，而是将其权重分配过程建模为一个随时间滚动更新的离散序列决策过程。对于时刻 \(t\)，智能体首先根据当前融合误差对应的离散状态 \(s_t\) 查询动作价值，再执行相应的权重调整动作，随后由新的融合结果产生下一时刻状态与即时奖励，并进一步用于 Q 表更新。由此，整个系统形成“状态观测—动作选择—权重更新—结果反馈—价值迭代”的闭环学习机制。
+
+具体而言，设上一时刻的融合权重向量为
+\begin{equation}
+\boldsymbol{\omega}_t
+=
+\left[
+\omega_t^{\mathrm{RSSI}},
+\omega_t^{\mathrm{AoA}},
+\omega_t^{\mathrm{PDR}}
+\right]^T,
+\label{eq:3_19_rlifa_weight_vector}
+\end{equation}
+其中各分量满足非负性与归一化约束。根据前文 3.3.2 中的动作空间设计，智能体在状态 \(s_t\) 下从动作集合
+\(\mathcal{A}=\{a_1,a_2,\ldots,a_9\}\)
+中选取一个动作 \(a_t\)，并对
+\(\omega_t^{\mathrm{RSSI}}\)
+和
+\(\omega_t^{\mathrm{AoA}}\)
+实施“增加 / 减小 / 保持”三类基本操作，再由归一化约束计算
+\(\omega_t^{\mathrm{PDR}}\)。
+因此，RL-IFA 的权重更新并不是连续优化求解，而是通过有限动作集合对当前权重向量进行离散修正。
+
+设比例更新步长为 \(\kappa\)，对于可调权重分量
+\(\omega_t^{x}\)（其中 \(x\in\{\mathrm{RSSI},\mathrm{AoA}\}\)），在动作 \(a_t\) 的作用下，其更新结果可写为
+\begin{equation}
+\omega_{t+1}^{x}=
+\begin{cases}
+(1+\kappa)\omega_t^{x}, & \text{若动作规定该分量增加},\\[4pt]
+(1-\kappa)\omega_t^{x}, & \text{若动作规定该分量减小},\\[4pt]
+\omega_t^{x}, & \text{若动作规定该分量保持不变}.
+\end{cases}
+\label{eq:3_20_rlifa_weight_update}
+\end{equation}
+在得到
+\(\omega_{t+1}^{\mathrm{RSSI}}\)
+和
+\(\omega_{t+1}^{\mathrm{AoA}}\)
+之后，第三个分量由归一化关系确定为
+\begin{equation}
+\omega_{t+1}^{\mathrm{PDR}}
+=
+1-\omega_{t+1}^{\mathrm{RSSI}}-\omega_{t+1}^{\mathrm{AoA}}.
+\label{eq:3_21_rlifa_weight_pdr}
+\end{equation}
+
+将更新后的权重代入位置级融合模型，可得下一时刻的融合位置输出
+\begin{equation}
+P_{t+1}^{\mathrm{Fused}}
+=
+\omega_{t+1}^{\mathrm{RSSI}} P_{t+1}^{\mathrm{RSSI}}
++
+\omega_{t+1}^{\mathrm{AoA}} P_{t+1}^{\mathrm{AoA}}
++
+\omega_{t+1}^{\mathrm{PDR}} P_{t+1}^{\mathrm{PDR}}.
+\label{eq:3_22_rlifa_fused_next}
+\end{equation}
+由式~\eqref{eq:3_22_rlifa_fused_next} 进一步计算融合误差
+\(\varepsilon_{t+1}\)，即可依据 3.3.1 中的离散映射规则获得下一状态 \(s_{t+1}\)，并依据 3.3.3 中定义的奖励函数获得即时奖励 \(r_t\)。由此，动作 \(a_t\) 对系统的影响被完整地传递到“新状态—新奖励”这一强化学习更新环节中。
+
+在策略执行阶段，RL-IFA 采用 \(\varepsilon\)-greedy 机制在“探索”与“利用”之间进行平衡。具体来说，在状态 \(s_t\) 下，智能体以概率 \(\varepsilon\) 从动作集合 \(\mathcal{A}\) 中随机选择一个动作，以概率 \(1-\varepsilon\) 选择当前 Q 值最大的动作，即
+\begin{equation}
+a_t=
+\begin{cases}
+\text{random action}, & \text{with probability } \varepsilon,\\[4pt]
+\arg\max\limits_{a\in\mathcal{A}}Q(s_t,a), & \text{with probability } 1-\varepsilon.
+\end{cases}
+\label{eq:3_23_rlifa_epsilon_greedy}
+\end{equation}
+引入该策略的原因在于，若始终选择当前最优动作，则智能体在训练初期容易陷入局部最优的权重配置；而适当保留随机探索能力，则有助于其在不同误差状态下遍历更多的动作组合，从而更充分地学习各观测源在不同条件下的相对贡献。
+
+在获得动作执行后的即时奖励 \(r_t\) 与下一状态 \(s_{t+1}\) 后，RL-IFA 采用标准 Q-Learning 规则对状态—动作价值函数进行迭代更新。设 \(Q(s_t,a_t)\) 表示在状态 \(s_t\) 下执行动作 \(a_t\) 的价值估计，则其更新公式为
+\begin{equation}
+Q(s_t,a_t)
+\leftarrow
+Q(s_t,a_t)
++
+\alpha
+\left[
+r_t
++
+\gamma \max_{a\in\mathcal{A}}Q(s_{t+1},a)
+-
+Q(s_t,a_t)
+\right],
+\label{eq:3_24_rlifa_q_update}
+\end{equation}
+其中，\(\alpha\) 为学习率，\(\gamma\) 为折扣因子。式~\eqref{eq:3_24_rlifa_q_update} 表明，RL-IFA 对当前动作优劣的判断并不只取决于其带来的单步误差变化，还取决于执行该动作后系统未来可能获得的长期累计回报。也就是说，智能体在更新权重时并不是简单地“哪个动作让当前误差更小就选哪个”，而是在多步交互意义下逐步逼近能够带来更优长期融合效果的动作选择策略。
+
+从算法流程上看，RL-IFA 的单步权重更新可概括为如下过程：首先，根据当前融合结果与真实位置之间的误差 \(\varepsilon_t\)，由式~\eqref{eq:3_13_rlifa_state} 将其映射为离散状态 \(s_t\)；其次，基于当前 Q 表和 \(\varepsilon\)-greedy 策略，从动作空间中选择动作 \(a_t\)；随后，依据式~\eqref{eq:3_20_rlifa_weight_update} 和式~\eqref{eq:3_21_rlifa_weight_pdr} 对权重向量进行更新，并计算新的融合位置 \(P_{t+1}^{\mathrm{Fused}}\)；接着，根据新的融合误差生成奖励 \(r_t\) 和下一状态 \(s_{t+1}\)；最后，利用式~\eqref{eq:3_24_rlifa_q_update} 对 Q 表进行迭代修正，并进入下一轮决策。随着轨迹样本不断积累，Q 表中不同状态—动作对的价值差异将逐步拉开，最终形成从误差状态到权重更新动作的经验映射关系。
+
+综上，RL-IFA 通过 Q-Learning 实现了对融合权重的闭环在线更新，其核心机制在于：将当前后验误差映射为离散状态，通过 \(\varepsilon\)-greedy 选择调权动作，并依据即时奖励与下一状态对 Q 表进行价值迭代，从而逐步学习得到不同误差等级下的最优权重更新策略。该机制为后续 PA-DQN 的改进提供了统一基线。
+
+\section{融合物理先验知识的 PA-DQN 智能体设计}
+\label{sec:3_4}
+
+在前述小节中，本文已经分别给出了 PA-DQN 的物理感知状态空间、增量式动作空间以及奖励函数设计。至此，单目标自适应融合定位问题的序列决策描述已经基本完成。在前述小节中，智能体在每一时刻根据环境感知状态 \(\mathbf{S}_t\) 选择权重调整动作 \(a_t\)，并依据奖励反馈不断修正决策策略。进一步需要解决的问题在于，如何在高维连续状态空间条件下有效逼近状态--动作价值函数，并据此实现对最优融合策略的学习。
+
+对于 RL-IFA 基线算法而言，其状态和动作均经过离散化处理，因此可以采用表格式 Q-Learning 直接对状态--动作值函数进行存储与更新。然而，PA-DQN 中的状态空间已不再是单一误差驱动的低维离散状态，而是扩展为包含物理层、统计层、几何层和历史决策信息的连续高维向量。若仍采用表格式方法，不仅会导致状态划分过粗、信息表达不足，还会使状态规模随特征维数增加而迅速膨胀，无法满足复杂城市环境下连续定位任务的求解需求。因此，本文采用深度 Q 网络（Deep Q-Network, DQN）对状态--动作价值函数进行近似表示，在 RL-IFA 序列决策框架基础上构建物理感知深度 Q 网络模型。
+
+\subsection{物理感知状态空间设计}
+\label{subsec:3_4_1}
+
+RL-IFA 将融合定位误差离散化后作为智能体状态输入，其优点在于建模形式简单，便于采用表格式 Q-Learning 完成权重学习。但对于复杂城市环境下的单目标连续定位任务，这种状态定义仍然存在明显局限。首先，误差状态属于后验反馈，只有当融合结果已经偏离真实位置后，智能体才会通过奖励变化感知当前权重配置存在问题。其次，不同环境条件下产生的定位误差在数值上可能相近，但其成因并不一致。例如，RSSI 波动增强、AoA 主径偏置和 PDR 累积漂移都可能导致误差上升，仅凭误差大小本身，智能体无法区分当前失真主要来源于哪一路观测。这样得到的策略更接近于事后修正，而不是面向环境变化的主动调节。
+
+为提高权重决策对复杂传播条件的适应性，本文在状态层显式引入能够反映传播复杂度、信号稳定性、跨模态一致性以及历史决策信息的物理感知特征。这里的“物理感知”并不是重新构造新的定位观测量，而是将前文 3.2.3 已提取的环境相关特征引入决策过程，使智能体在更新融合权重之前，先对当前观测质量和环境状态形成更有针对性的描述。
+
+基于上述考虑，本文将第 \(t\) 个时刻的状态向量定义为
+\begin{equation}
+\mathbf{S}_t=
+\left[
+\sigma_{\tau,t},\,
+\sigma^2_{\mathrm{RSSI},t},\,
+D_{\mathrm{RF\mbox{-}PDR},t},\,
+\boldsymbol{\omega}_{t-1}
+\right]^T,
+\label{eq:pa_dqn_state}
+\end{equation}
+其中，\(\sigma_{\tau,t}\) 为 RMS 时延扩展，\(\sigma^2_{\mathrm{RSSI},t}\) 为 RSSI 方差，\(D_{\mathrm{RF\mbox{-}PDR},t}\) 为无线观测定位结果与轨迹推算结果之间的几何一致性特征，\(\boldsymbol{\omega}_{t-1}\) 为上一时刻的融合权重向量。
+
+式~\eqref{eq:pa_dqn_state} 的关键不在于状态维数增加，而在于状态信息由“结果误差”转向“环境表征”。其中，\(\sigma_{\tau,t}\) 反映当前传播路径在时延域上的离散程度。当多径成分增多、主导路径不再稳定时，该特征通常会增大，对应场景往往偏离理想视距传播条件。将其引入状态后，智能体可以在误差尚未明显扩大之前，先对当前传播环境的复杂程度作出响应。
+
+\(\sigma^2_{\mathrm{RSSI},t}\) 用于表征接收信号强度在局部时间窗口内的波动情况。当遮挡、深衰落或局部散射增强时，RSSI 序列通常会出现更明显的起伏，此时若仍维持较高的 RSSI 融合权重，往往会降低最终定位结果的稳定性。因此，RSSI 方差进入状态空间后，智能体能够对功率观测的可信度作出更细致的区分。
+
+\(D_{\mathrm{RF\mbox{-}PDR},t}\) 则用于描述不同定位分支之间的几何协调关系。与单独观察某一路观测质量不同，该特征反映的是无线观测侧位置估计与轨迹推算结果之间的一致程度。将这一特征纳入状态后，智能体不仅能感知单路观测是否稳定，还能进一步判断不同信息源之间是否相互支持。
+
+除环境和观测特征外，本文还将上一时刻的权重向量 \(\boldsymbol{\omega}_{t-1}\) 作为状态的一部分。引入 \(\boldsymbol{\omega}_{t-1}\) 后，智能体在进行当前决策时能够保留必要的历史上下文，这也为后续增量式动作设计提供了基础。从方法层看，PA-DQN 的状态空间重构使权重分配不再只是对已发生误差的被动修正，而更接近于依据当前环境特征进行前置调节。
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.82\textwidth]{figures/ch3_state_space_architecture.pdf}
+    \vspace{4.5cm}
+    \caption{PA-DQN 物理感知状态空间及其与融合决策关系示意图}
+    \label{fig:pa_dqn_state_space}
+\end{figure}
+
+\subsection{抑制轨迹锯齿的增量式连续动作空间设计}
+\label{subsec:3_4_2}
+
+在 RL-IFA 基线算法中，动作用于对融合权重执行固定步长的离散增减操作。该设计虽然便于采用表格式 Q-Learning 实现，但其更新粒度较粗，且相邻时刻的动作切换容易导致权重向量发生突变。对于单目标连续定位任务而言，这种权重突变会进一步传递到位置级融合结果中，表现为融合轨迹局部不连续、拐点处抖动增强以及短时间尺度内的锯齿现象。
+
+针对这一问题，本文在 PA-DQN 中引入增量式连续动作空间。其基本思想是：智能体不再直接从有限离散动作集合中选择粗粒度操作，而是根据当前物理感知状态输出一个连续动作增量向量，用于对上一时刻的融合权重进行小幅修正。
+
+设时刻 \(t\) 的连续动作向量定义为
+\begin{equation}
+\mathbf{a}_t=
+\left[
+\Delta \omega_t^{\mathrm{RSSI}},
+\Delta \omega_t^{\mathrm{AoA}}
+\right]^T,
+\label{eq:3_18_continuous_action}
+\end{equation}
+其中，\(\Delta \omega_t^{\mathrm{RSSI}}\) 和 \(\Delta \omega_t^{\mathrm{AoA}}\) 分别表示当前时刻对 RSSI 和 AoA 融合权重的连续增量调整量。在给定上一时刻权重向量 \(\boldsymbol{\omega}_{t-1}\) 的条件下，当前时刻的中间权重更新可写为
+\begin{equation}
+\tilde{\omega}_t^{\mathrm{RSSI}}
+=
+\omega_{t-1}^{\mathrm{RSSI}}+\Delta \omega_t^{\mathrm{RSSI}},
+\qquad
+\tilde{\omega}_t^{\mathrm{AoA}}
+=
+\omega_{t-1}^{\mathrm{AoA}}+\Delta \omega_t^{\mathrm{AoA}},
+\label{eq:3_19_weight_increment}
+\end{equation}
+并进一步由归一化关系得到 \(\tilde{\omega}_t^{\mathrm{PDR}} = 1-\tilde{\omega}_t^{\mathrm{RSSI}}-\tilde{\omega}_t^{\mathrm{AoA}}\)。
+
+为了保证更新后的权重向量满足非负性和归一化约束，本文进一步引入投影算子 \(\Pi(\cdot)\)，将中间权重映射到可行域内，即
+\begin{equation}
+\boldsymbol{\omega}_t
+=
+\Pi
+\left(
+\tilde{\boldsymbol{\omega}}_t
+\right).
+\label{eq:3_21_projection}
+\end{equation}
+
+与离散动作空间相比，增量式连续动作空间使控制量天然具有连续性，更适合单目标轨迹跟踪场景下的时序决策需求。为了进一步限制权重突变幅度，本文对连续动作增量的取值范围设置边界约束，即 \(\Delta \omega_t^{x}\in[-\delta,\delta]\)。这种“缓变更新、持续纠偏”的特性，显著抑制了由策略突变带来的轨迹锯齿现象。
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.84\textwidth]{figures/ch3_continuous_action_space.pdf}
+    \vspace{4.5cm}
+    \caption{PA-DQN 增量式连续动作空间与权重更新机制示意图}
+    \label{fig:ch3_continuous_action_space}
+\end{figure}
+
+\subsection{兼顾短时抗扰与长时纠偏的奖励函数设计}
+\label{subsec:3_4_3}
+
+在强化学习框架中，奖励函数决定了智能体对策略优劣的判断标准。对于单目标连续定位任务而言，若奖励仅由当前时刻的定位误差决定，则智能体往往会倾向于频繁调整权重，从而在连续轨迹上产生明显的抖动。
+
+本文将 PA-DQN 的奖励设计为“精度驱动项 + 平滑约束项”的双重形式。设时刻 \(t\) 的定位误差为 \(\varepsilon_t\)，则基础精度奖励项为
+\begin{equation}
+r_t^{(1)}=-\varepsilon_t.
+\label{eq:3_26_pa_reward_error}
+\end{equation}
+为了约束相邻时刻的权重变化幅度，引入平滑惩罚项：
+\begin{equation}
+r_t^{(2)}
+=
+-\lambda
+\left\|
+\boldsymbol{\omega}_t-\boldsymbol{\omega}_{t-1}
+\right\|_2,
+\label{eq:3_27_pa_reward_smooth}
+\end{equation}
+其中，\(\lambda>0\) 为平滑惩罚系数。最终总奖励函数定义为
+\begin{equation}
+r_t
+=
+r_t^{(1)}+r_t^{(2)}
+=
+-\varepsilon_t
+-
+\lambda
+\left\|
+\boldsymbol{\omega}_t-\boldsymbol{\omega}_{t-1}
+\right\|_2.
+\label{eq:3_28_pa_reward_total}
+\end{equation}
+
+式~\eqref{eq:3_28_pa_reward_total} 使智能体在策略学习过程中同时面对两类约束：尽可能降低当前时刻的定位偏差，同时抑制不必要的控制震荡。这种联合驱动机制使 PA-DQN 的策略学习不再局限于“局部最优”，而是逐步形成兼顾即时精度和长期稳定性的融合决策。
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.84\textwidth]{figures/ch3_reward_design_principle.pdf}
+    \vspace{4.5cm}
+    \caption{PA-DQN 奖励函数中精度项与平滑项协同作用机理示意图}
+    \label{fig:ch3_reward_design_principle}
+\end{figure}
+
+\subsection{物理感知深度 Q 网络结构设计}
+\label{subsec:3_4_4}
+
+PA-DQN 采用深度 Q 网络（DQN）对状态--动作价值函数进行近似表示。网络以物理感知状态向量 \(\mathbf{S}_t\) 作为输入，通过多层非线性映射输出各候选动作对应的 Q 值估计：
+\begin{equation}
+\mathbf{Q}(\mathbf{S}_t;\theta)
+=
+\left[
+Q(\mathbf{S}_t,a_1;\theta),
+\ldots,
+Q(\mathbf{S}_t,a_{|\mathcal{A}|};\theta)
+\right]^T.
+\label{eq:3_4_4_q_output}
+\end{equation}
+
+从结构上看，PA-DQN 采用全连接前馈神经网络架构。网络目标值依据 Bellman 最优性原理计算：
+\begin{equation}
+y_t
+=
+r_t+\gamma \max_{a'}Q(\mathbf{S}_{t+1},a';\theta^-),
+\label{eq:3_4_4_target}
+\end{equation}
+并采用均方误差损失函数进行优化：
+\begin{equation}
+L(\theta)
+=
+\mathbb{E}_{(\mathbf{S}_t,a_t,r_t,\mathbf{S}_{t+1})\sim \mathcal{D}}
+\left[
+\left(
+y_t-Q(\mathbf{S}_t,a_t;\theta)
+\right)^2
+\right].
+\label{eq:3_4_4_loss}
+\end{equation}
+
+为了提升训练过程的稳定性，本文在 PA-DQN 中引入经验回放机制和目标网络机制。经验回放用于打破样本间的时序相关性，而目标网络则减弱了目标值随训练同步波动带来的震荡问题。图~\ref{fig:pa_dqn_network_structure} 给出了 PA-DQN 智能体网络结构与训练流程示意图。
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.84\textwidth]{figures/ch3_pa_dqn_network_structure.pdf}
+    \vspace{4.5cm}
+    \caption{PA-DQN 智能体网络结构与训练流程示意图}
+    \label{fig:pa_dqn_network_structure}
+\end{figure}
+
+\section{仿真预训练策略与网络收敛性分析}
+\label{sec:3_5}
+
+对于本文提出的 PA-DQN 方法而言，策略学习是在环境交互中不断采样、持续更新的序列决策学习过程。本文采用“复杂城市环境仿真构建 + 强化学习预训练 + 收敛性分析”的技术路线，在可控仿真环境中完成 PA-DQN 智能体的初始策略学习。
+
+\subsection{仿真预训练环境构建}
+\label{subsec:3_5_1}
+
+仿真预训练环境以 3.2 节构建的三维场景为基础，将目标终端运动、传播环境变化及多源观测生成统一纳入同一交互平台。在训练回合中，系统随机组合轨迹模式与传播状态切换机制，使智能体能接触到更丰富的状态转移分布，从而减弱对单一场景的依赖。
+
+\subsection{神经网络结构与训练参数配置}
+\label{subsec:3_5_2}
+
+本文采用三层隐藏层的全连接网络作为逼近器。输入层维数为 6，包含物理感知状态分量及历史权重；隐藏层节点数设为 128/128/64，均采用 ReLU 激活。在训练参数方面，学习率设为 \(1\times 10^{-3}\)，折扣因子 \(\gamma=0.95\)，经验回放池容量为 50000。
+
+表~\ref{tab:pa_dqn_config} 给出了本文 PA-DQN 神经网络结构与主要训练参数配置。
+
+\begin{table}[htbp]
+    \centering
+    \caption{PA-DQN 神经网络结构与训练参数配置}
+    \label{tab:pa_dqn_config}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{类别} & \textbf{参数} & \textbf{配置} \\
+        \midrule
+        网络结构 & 输入维数 & 6 \\
+         & 隐藏层层数 & 3 \\
+         & 隐藏层节点数 & 128 / 128 / 64 \\
+         & 激活函数 & ReLU \\
+         & 输出维数 & 9 \\
+        \midrule
+        优化设置 & 优化器 & Adam \\
+         & 学习率 & \(1\times 10^{-3}\) \\
+         & Batch Size & 64 \\
+         & 损失函数 & 均方误差损失 \\
+        \midrule
+        强化学习参数 & 折扣因子 \(\gamma\) & 0.95 \\
+         & 初始探索率 \(\varepsilon_0\) & 1.0 \\
+         & 最小探索率 \(\varepsilon_{\min}\) & 0.05 \\
+         & 经验回放池容量 & 50000 \\
+         & 目标网络同步周期 & 200 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{预训练策略设计}
+\label{subsec:3_5_3}
+
+在训练策略上，本文采用“先仿真预训练、后测试评估”的两阶段思路。训练初期通过较大的探索概率 \(\varepsilon\) 鼓励智能体充分尝试动作；随后利用目标网络周期同步机制缓解训练不稳定性，使智能体在正式测试前形成稳定的初始决策能力。
+
+\subsection{收敛性分析指标与过程讨论}
+\label{subsec:3_5_4}
+
+本文采用平均回合奖励、平均定位误差和 Q 网络训练损失评估收敛过程。收敛过程经历探索主导、策略形成和稳定收敛三个阶段。实验表明，当训练进入后期后，平均定位误差收敛至较低水平，训练损失保持稳定。
+
+\section{实验设置与评价指标}
+\label{sec:3_6}
+
+本文采用均方根误差（RMSE）和 95\% 分位误差（P95）作为核心评价指标。
+
+\section{实验结果与性能分析}
+\label{sec:3_7}
+
+实验结果表明，相较于 EKF 和标准 Q-Learning，PA-DQN 的定位精度分别提升了约 70.7\% 和 63.6\%。
 
 \section{本章小结}
+\label{sec:3_8}
 
-% TODO: 总结本章工作：
-% 1. 提出了PA-DQN物理感知融合框架
-% 2. 设计了分层物理感知状态空间（σ_τ为核心创新）
-% 3. 提出增量式动作空间与双重奖励函数
-% 4. 实验验证了精度提升70.7%（vs EKF）和鲁棒性优势
+本章提出了一种基于物理感知深度强化学习的自适应融合定位方法，有效提升了复杂城市环境中的单目标定位性能。
