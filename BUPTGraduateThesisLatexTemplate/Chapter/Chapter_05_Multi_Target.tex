@@ -678,16 +678,6 @@ X_{i,j}=[x_i,y_i,z_i,R_{i,j}].
 
 在评价指标方面，本文主要从定位精度与掉点鲁棒性两个角度对模型进行评估。定位精度方面，采用分类准确率和平均定位误差作为核心指标；鲁棒性方面，则重点关注在不同掉点比例下学生网络性能的衰减程度，以及引入知识蒸馏后相对于未蒸馏学生网络的性能恢复幅度。通过上述实验设置，本文希望回答两个问题：其一，完整网络所学习到的全局空间知识能否通过蒸馏有效迁移到掉点网络中；其二，在不同掉点条件下，所提出方法是否能够保持更稳定的定位性能。
 
-图~\ref{fig:ch4_experiment_pipeline} 预留为实验总体流程示意图，用于展示数据集构建、掉点样本生成、教师训练、学生蒸馏训练以及测试分析之间的关系。
-
-\begin{figure}[htbp]
-    \centering
-    % \includegraphics[width=0.88\textwidth]{figures/ch4_experiment_pipeline.pdf}
-    \vspace{5.0cm}
-    \caption{实验总体流程示意图}
-    \label{fig:ch4_experiment_pipeline}
-\end{figure}
-
 表~\ref{tab:ch4_hyperparameters} 给出了本文实验所采用的主要参数设置。
 
 \begin{table}[htbp]
