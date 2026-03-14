@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+    \centering
+    \bicaption{PA-DQN 消融实验结果}{Ablation study results of PA-DQN}
+    \label{tab:ablation_padqn}
+    \begin{tabular}{@{}lcc@{}}
+        \toprule
+        \textbf{模型变体} & \textbf{定位误差 RMSE（m）} & \textbf{权重变化率} \\ 
+        \midrule
+        完整 PA-DQN（本文方法） & 2.15 & 0.04 \\
+        去除物理感知状态 & 6.89 & 0.09 \\
+        去除增量式动作设计 & 4.52 & 0.28 \\
+        去除稳定性奖励项 & 2.48 & 0.17 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
