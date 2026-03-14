@@ -141,15 +141,7 @@ r(\mathbf{x})=\max_{\mathbf{y}\in\mathcal{N}(\mathbf{x})} r(\mathbf{y}),
 
 从空间结构角度看，真实辐射源与鬼影响应之间的差异并不主要体现在单个峰值幅度上，而更多体现在区域层面的形态特征上。真实目标通常对应更集中、更连续的局部能量团簇，而鬼影响应往往表现为位置偏移、扩散不均匀或边界不规则的次级响应。若判定机制仍以“点”为单位，则这些区域性差异无法被有效利用；只有当目标表示由“局部峰值”扩展为“区域结构”后，真实目标、同源多峰与多径鬼影之间的差异才有可能在统一框架下得到区分。
 
-因此，本节分析表明，在复杂城市环境中，传统峰值判定方法的局限并不仅仅体现在阈值设置困难，而在于其判定单元过于局部，无法充分利用空间响应的整体形态信息。这一结论也进一步说明，后续方法设计应当从逐峰检测转向区域级判别，通过对空间信号场进行成像重构和结构化分析，提高多目标并发定位中的抗虚警能力。图~\ref{fig:ch4_peak_vs_ghost} 给出了多径鬼影干扰下传统峰值判定方法失效机理的示意图。
-
-\begin{figure}[htbp]
-    \centering
-    % \includegraphics[width=0.84\textwidth]{figures/ch4_peak_vs_ghost.pdf}
-    \vspace{4.5cm}
-    \caption{多径鬼影干扰下传统峰值判定方法失效机理示意图}
-    \label{fig:ch4_peak_vs_ghost}
-\end{figure}
+因此，本节分析表明，在复杂城市环境中，传统峰值判定方法的局限并不仅仅体现在阈值设置困难，而在于其判定单元过于局部，无法充分利用空间响应的整体形态信息。这一结论也进一步说明，后续方法设计应当从逐峰检测转向区域级判别，通过对空间信号场进行成像重构和结构化分析，提高多目标并发定位中的抗虚警能力。
 
 \subsection{从离散观测到信号成像的跨模态建模思路}
 \label{subsec:4_1_4}
@@ -229,7 +221,7 @@ r(\mathbf{x})=\max_{\mathbf{y}\in\mathcal{N}(\mathbf{x})}r(\mathbf{y})
 
 基于上述建模思路，本章将多目标并发定位问题进一步转化为 Radio Map 上的目标检测问题。具体做法是：首先将无人机采集到的离散 RSSI 观测映射为二维无线电热力图；然后利用改进的 Anchor-Free YOLOv7 检测网络在图像域内识别真实目标响应区域，并输出目标中心位置及其空间范围；最后，根据检测结果完成多目标位置估计。该技术路线的意义在于，它将原本在数值域内难以稳定处理的局部多峰与鬼影问题，转化为更适合由深度视觉网络处理的区域结构识别问题，从而为后续的多目标并发定位提供统一的输入表征和求解框架。
 
-因此，本节给出的跨模态建模思路，不仅是对离散观测形式的一种表征转换，更是本章整体方法设计的起点。后续 4.2 节将首先讨论如何从无人机空间扫描所得的离散 RSSI 样本出发，构建具有连续性和纹理可分性的 Radio Map；在此基础上， 4.3 节再进一步给出面向 Radio Map 场景的改进 Anchor-Free YOLOv7 检测网络设计。图~\ref{fig:ch4_cross_modal_pipeline} 给出了本章从无人机离散观测到 Radio Map 成像，再到跨模态视觉检测的整体流程示意图。
+因此，本节给出的跨模态建模思路，不仅是对离散观测形式的一种表征转换，更是本章整体方法设计的起点。SSI 样本出发，构建具有连续性和纹理可分性的 Radio Map；在此基础上，图~\ref{fig:ch4_cross_modal_pipeline} 给出了本章从无人机离散观测到 Radio Map 成像，再到跨模态视觉检测的整体流程示意图。
 
 \begin{figure}[htbp]
     \centering
@@ -304,13 +296,7 @@ P_r(\mathbf{q}_i)
 
 基于上述建模结果，本文后续将不直接对式~\eqref{eq:4_23_multi_target_power} 中的离散功率观测进行逐点判定，而是进一步将其映射到二维规则网格中，构建适合视觉检测网络处理的无线电热力图。下一小节将给出基于空间扫描观测的 RSSI 栅格映射方法，并说明如何在射线追踪生成的空间响应基础上完成 Radio Map 的图像化表达。
 
-\begin{figure}[htbp]
-    \centering
-    % \includegraphics[width=0.84\textwidth]{figures/ch4_ray_tracing_modeling.pdf}
-    \vspace{4.5cm}
-    \caption{基于 OSM 数据与 MATLAB 工具链的复杂城市射线追踪传播场建模示意图}
-    \label{fig:ch4_ray_tracing_modeling}
-\end{figure}
+
 \subsection{基于空间扫描观测的 RSSI 栅格映射方法}
 \label{subsec:4_2_2}
 
@@ -353,8 +339,7 @@ OpenStreetMap 是一种开放式地理信息数据源，能够提供道路、建
 
 \begin{figure}[htbp]
     \centering
-    % \includegraphics[width=0.84\textwidth]{figures/ch4_osm_siteviewer_toolchain.pdf}
-    \vspace{4.5cm}
+    \includegraphics[width=0.84\textwidth]{ch4/7.png}
     \caption{基于 OSM 与 MATLAB 工具链的复杂城市场景建模流程示意图}
     \label{fig:ch4_osm_siteviewer_toolchain}
 \end{figure}
@@ -561,7 +546,7 @@ q^{T}_{m}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.92\textwidth]{ch4/7.png}
+    \includegraphics[width=0.92\textwidth]{ch4/8.png}
     \caption{教师—学生网络架构示意图}
     \label{fig:kd_teacher_student_architecture}
 \end{figure}
@@ -648,7 +633,7 @@ e=\left\|\hat{\mathbf{p}}-\mathbf{p}^{\mathrm{gt}}\right\|_2.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.82\textwidth]{ch4/8.png}
+    \includegraphics[width=0.82\textwidth]{ch4/9.png}
     \caption{不同方法在 \(25\%\) 掉点条件下的定位误差累计分布曲线}
     \label{fig:ch4_error_cdf}
 \end{figure}
@@ -677,7 +662,7 @@ e=\left\|\hat{\mathbf{p}}-\mathbf{p}^{\mathrm{gt}}\right\|_2.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.82\textwidth]{ch4/9.png}
+    \includegraphics[width=0.82\textwidth]{ch4/10.png}
     \caption{不同方法在 \(25\%\) 掉点条件下的误差统计柱状图}
     \label{fig:ch4_error_bar}
 \end{figure}
@@ -721,7 +706,8 @@ e=\left\|\hat{\mathbf{p}}-\mathbf{p}^{\mathrm{gt}}\right\|_2.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.92\textwidth]{ch4/10.png}
+    % \includegraphics[width=0.92\textwidth]{figures/ch4_grid_prediction_visual.pdf}
+    \vspace{6.0cm}
     \caption{典型测试样本的空间预测结果可视化对比}
     \label{fig:ch4_grid_prediction_visual}
 \end{figure}
