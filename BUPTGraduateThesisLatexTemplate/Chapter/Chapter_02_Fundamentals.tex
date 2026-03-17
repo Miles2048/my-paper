@@ -353,12 +353,11 @@ s,a
 \end{equation}
 其中，$s'$ 表示执行动作 $a$ 后系统到达的下一状态。该式为后续强化学习求解提供了理论基础。
 
-图~\ref{fig:ch2_mdp_framework} 可给出本文定位问题中的 MDP 建模示意图，用于展示状态、动作、奖励和状态转移之间的闭环关系。对于第三章而言，该图尤其适合体现物理感知状态输入、融合权重调整动作以及定位误差奖励之间的对应关系。
+图~\ref{fig:ch2_mdp_framework} 给出了本文定位问题中的 MDP 建模示意图，清晰展现了状态观测、动作执行与奖励反馈之间的闭环交互过程。该框架为第三章中基于物理感知的多源异构信息自适应融合提供了核心方法学支撑。
 
 \begin{figure}[htbp]
     \centering
-    % \includegraphics[width=0.80\textwidth]{ch2/mdp_framework.png}
-    \vspace{5cm}
+    \includegraphics[width=0.80\textwidth]{figures/ch2/6.png}
     \caption{定位问题中的马尔可夫决策过程建模示意图}
     \label{fig:ch2_mdp_framework}
 \end{figure}
@@ -427,10 +426,11 @@ q^{S}_{m}
 \end{equation}
 其中，$m$ 表示第 $m$ 个类别或空间栅格索引。相比于 one-hot 硬标签，软标签分布包含了类别间更细粒度的相对相似性信息，因此能够为学生网络提供更丰富的监督信号。
 
+图~\ref{fig:ch2_distillation_framework} 展示了知识蒸馏中典型的教师—学生学习架构。通过这种机制，学生网络能够在缺失部分节点观测的极端情况下，通过学习教师模型的深层判别特征来维持定位性能的稳健性。
+
 \begin{figure}[htbp]
     \centering
-    % \includegraphics[width=0.82\textwidth]{ch2/distillation_framework.png}
-    \vspace{5cm}
+    \includegraphics[width=0.82\textwidth]{figures/ch2/7.png}
     \caption{知识蒸馏教师—学生学习机制示意图}
     \label{fig:ch2_distillation_framework}
 \end{figure}
