@@ -42,7 +42,7 @@ BASE_GHOSTS = [
 
 VARIANTS = [
     {
-        "name": "radiomap_3d_urban_canyon_a",
+        "name": "radiomap_3d_preview_a",
         "seed": 42,
         "path_loss_exp": 2.90,
         "noise_std": 3.2,
@@ -56,7 +56,7 @@ VARIANTS = [
         "azim": -124,
     },
     {
-        "name": "radiomap_3d_urban_canyon_b",
+        "name": "radiomap_3d_preview_b",
         "seed": 77,
         "path_loss_exp": 3.02,
         "noise_std": 3.8,
@@ -70,7 +70,7 @@ VARIANTS = [
         "azim": -127,
     },
     {
-        "name": "radiomap_3d_reflection_dense",
+        "name": "radiomap_3d_preview_c",
         "seed": 103,
         "path_loss_exp": 2.98,
         "noise_std": 4.1,
@@ -84,7 +84,7 @@ VARIANTS = [
         "azim": -131,
     },
     {
-        "name": "radiomap_3d_shadow_fading",
+        "name": "radiomap_3d_preview_d",
         "seed": 256,
         "path_loss_exp": 3.10,
         "noise_std": 3.9,
@@ -98,7 +98,7 @@ VARIANTS = [
         "azim": -122,
     },
     {
-        "name": "radiomap_3d_multipath_strong",
+        "name": "radiomap_3d_preview_e",
         "seed": 512,
         "path_loss_exp": 2.87,
         "noise_std": 4.4,
@@ -312,14 +312,14 @@ def build_radiomap(variant):
 def save_radiomap_figure(variant):
     display_map = build_radiomap(variant)
     display_map_norm = normalize_field(display_map)
-    z_map = -102.0 + 49.0 * display_map_norm
+    z_map = 0.0 + 42.0 * display_map_norm
 
     x_fine = np.linspace(0.0, AREA_SIZE_M, DISPLAY_RESOLUTION)
     y_fine = np.linspace(0.0, AREA_SIZE_M, DISPLAY_RESOLUTION)
     xx_fine, yy_fine = np.meshgrid(x_fine, y_fine)
 
     plt.rcParams["font.family"] = "Times New Roman"
-    fig = plt.figure(figsize=(10.8, 8.0), dpi=300)
+    fig = plt.figure(figsize=(14.5, 10.8), dpi=320)
     ax = fig.add_subplot(111, projection="3d")
 
     facecolors = cm.Greys(0.34 + 0.36 * display_map_norm)
@@ -337,22 +337,43 @@ def save_radiomap_figure(variant):
         ccount=220,
     )
 
-    ax.set_title("Three-Dimensional Radio Map", pad=12, fontsize=15)
-    ax.set_xlabel("X / m", labelpad=10)
-    ax.set_ylabel("Y / m", labelpad=10)
-    ax.set_zlabel("RSSI / dBm", labelpad=8)
+    ax.set_xlabel("X / m", labelpad=16, fontsize=19)
+    ax.set_ylabel("Y / m", labelpad=16, fontsize=19)
     ax.set_xlim(0.0, AREA_SIZE_M)
     ax.set_ylim(0.0, AREA_SIZE_M)
-    ax.set_zlim(np.min(z_map) - 1.5, np.max(z_map) + 1.5)
+    ax.set_zlim(0.0, 42.0)
     ax.view_init(elev=variant["elev"], azim=variant["azim"])
+    ax.set_xticks([0, 100, 200, 300, 400, 500])
+    ax.set_yticks([0, 100, 200, 300, 400, 500])
+    ax.set_zticks([0, 10, 20, 30, 40])
+    ax.tick_params(axis="x", which="major", labelsize=15, pad=6)
+    ax.tick_params(axis="y", which="major", labelsize=15, pad=6)
+    ax.tick_params(axis="z", which="major", labelsize=15, pad=8)
     ax.xaxis.pane.set_facecolor((0.97, 0.97, 0.97, 1.0))
     ax.yaxis.pane.set_facecolor((0.97, 0.97, 0.97, 1.0))
     ax.zaxis.pane.set_facecolor((0.99, 0.99, 0.99, 1.0))
     ax.grid(False)
+    ax.set_box_aspect((1.0, 1.0, 0.68))
+
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.line.set_linewidth(1.4)
+
+    # 3D z-axis labels are often clipped in exported figures, so add a fixed
+    # figure-level annotation to make the quantity and unit explicit.
+    fig.text(
+        0.03,
+        0.77,
+        "Z axis: Received Power (dBm)",
+        rotation=90,
+        fontsize=20,
+        fontfamily="Times New Roman",
+        va="center",
+        ha="center",
+    )
 
     output_path = OUTPUT_DIR / f"{variant['name']}.png"
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight", pad_inches=0.08)
+    fig.subplots_adjust(left=0.03, right=0.985, bottom=0.035, top=0.985)
+    plt.savefig(output_path, dpi=320, bbox_inches="tight", pad_inches=0.10)
     plt.close(fig)
     return output_path
 

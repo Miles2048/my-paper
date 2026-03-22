@@ -294,7 +294,43 @@ P_r(\mathbf{q}_i)
 
 需要说明的是，本文在第四章中采用射线追踪建模，并不意味着最终的多目标定位仍停留在传统数值求解框架中。相反，射线追踪的主要作用在于构建具有物理一致性的底层空间传播场，为后续 RSSI 栅格映射与 Radio Map 生成提供可靠输入。也就是说，射线追踪负责回答“空间中信号如何传播”的问题，而后续的信号成像与目标检测则负责回答“如何从空间响应中识别真实目标”的问题。二者在本章中分别对应传播场建模层与跨模态识别层，共同构成多目标并发定位方法的前端表征基础。
 
-基于上述建模结果，本文后续将不直接对式~\eqref{eq:4_23_multi_target_power} 中的离散功率观测进行逐点判定，而是进一步将其映射到二维规则网格中，构建适合视觉检测网络处理的无线电热力图。下一小节将给出基于空间扫描观测的 RSSI 栅格映射方法，并说明如何在射线追踪生成的空间响应基础上完成 Radio Map 的图像化表达。
+基于上述建模结果，本文后续将不直接对式~\eqref{eq:4_23_multi_target_power} 中的离散功率观测进行逐点判定，而是进一步将其映射到二维规则网格中，构建适合视觉检测网络处理的无线电热力图。
+
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}[b]{0.78\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{ch4/11.png}
+    \end{minipage}
+
+    \vspace{0.7em}
+
+    \begin{minipage}[b]{0.78\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{ch4/12.png}
+    \end{minipage}
+    \caption{复杂城市传播场条件下 Radio Map 的三维可视化示意图（一）}
+    \label{fig:ch4_radiomap_3d_gallery_1}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}[b]{0.78\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{ch4/13.png}
+    \end{minipage}
+
+    \vspace{0.7em}
+
+    \begin{minipage}[b]{0.78\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{ch4/14.png}
+    \end{minipage}
+    \caption{复杂城市传播场条件下 Radio Map 的三维可视化示意图（二）}
+    \label{fig:ch4_radiomap_3d_gallery_2}
+\end{figure}
+
+由图~\ref{fig:ch4_radiomap_3d_gallery_1} 和图~\ref{fig:ch4_radiomap_3d_gallery_2} 可以看出，在多目标并发辐射、建筑遮挡、街道走廊效应以及多径反射共同作用下，空间接收功率分布呈现出显著的非均匀峰谷结构。不同场景下的 Radio Map 在峰值位置、能量扩散范围以及局部起伏纹理上均存在明显差异，这表明复杂城市环境中的空间响应并非理想化单峰衰减场，而是具有较强区域结构和传播场景依赖性的连续功率表征。该结果进一步说明，将射线追踪生成的离散功率观测组织为 Radio Map，不仅能够保留真实目标附近的主响应区域，也能够将反射增强和阴影衰落等传播现象显式体现出来，从而为后续 RSSI 栅格映射和跨模态目标检测提供更具判别性的输入基础。
 
 \subsection{基于空间扫描观测的 RSSI 栅格映射方法}
 \label{subsec:4_2_2}
