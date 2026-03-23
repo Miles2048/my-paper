@@ -780,20 +780,55 @@ y_t-Q(\mathbf{S}_t,a_t;\theta)
 \subsection{典型轨迹结果分析}
 \label{subsec:3_6_3}
 
-为了进一步分析不同算法在连续定位任务中的轨迹表现，本文选取矩形路径、对角线路径、反对角线路径以及随机游走路径四类典型测试轨迹进行可视化比较，结果如图~\ref{fig:ch3_typical_trajectories} 所示。图中采用多子图形式分别展示不同轨迹类型下各算法的连续定位输出，以便比较不同方法在复杂环境切换条件下的轨迹跟踪能力。
+为了进一步分析不同算法在连续定位任务中的轨迹表现，本文选取矩形路径、对角线路径、反对角线路径以及随机游走路径四类典型测试轨迹进行可视化比较。考虑到原四合一对比图在版面压缩后细节不易辨认，本文重新采用同一总图下的四个子图形式分别展示不同轨迹类型下的定位结果，以便在保持版面完整性的同时提高局部细节的可读性。
 
 从整体趋势看，单源方法在不同轨迹条件下均存在较明显的局部偏离。PDR-only 由于误差随时间累积，其轨迹在长距离运动过程中逐渐偏离真实路径；AoA-only 则在非视距和强反射条件下更容易出现局部跳变。EKF 的轨迹相较单源方法更平滑，但在环境快速切换区段仍可观察到较明显的偏移。RL-IFA 通过动态权重更新在一定程度上改善了上述问题，但在局部区段仍存在由权重切换引起的折线化现象。
 
-相比之下，PA-DQN 在四类轨迹上的输出整体更接近真实轨迹。在矩形路径中，转角位置的偏移较小；在对角线和反对角线路径中，穿越 LOS/NLOS 切换区段时轨迹保持较好的连续性；在随机游走路径中，其局部轨迹抖动相对较弱。该结果说明，物理感知状态空间与离散增量动作更新机制能够在连续定位场景中有效抑制由观测突变和权重震荡引起的轨迹不连续问题。图~\ref{fig:ch3_typical_trajectories} 的价值不仅在于给出可视化结果，更在于从轨迹形态层面验证本文方法相较于对比算法的稳定优势。
+相比之下，PA-DQN 在四类轨迹上的输出整体更接近真实轨迹。在矩形路径中，转角位置的偏移较小。在对角线和反对角线路径中，穿越 LOS/NLOS 切换区段时轨迹保持较好的连续性。在随机游走路径中，其局部轨迹抖动相对较弱。该结果说明，物理感知状态空间与离散增量动作更新机制能够在连续定位场景中有效抑制由观测突变和权重震荡引起的轨迹不连续问题。
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.88\textwidth]{ch3/15.png}
-    \caption{不同算法在典型测试轨迹下的连续定位结果对比}
+    \begin{minipage}[t]{0.76\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ch3/矩形轨迹对比图.png}
+        
+        \small (a) 矩形轨迹
+    \end{minipage}
+
+    \vspace{0.8em}
+
+    \begin{minipage}[t]{0.76\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ch3/对角线轨迹对比图.png}
+        
+        \small (b) 对角线轨迹
+    \end{minipage}
+    \caption{不同算法在典型测试轨迹下的连续定位结果对比（上）}
     \label{fig:ch3_typical_trajectories}
 \end{figure}
 
-从图~\ref{fig:ch3_typical_trajectories} 可以进一步做更细致分析。对于矩形路径，PA-DQN 在拐角处未出现明显的外扩偏离，说明其在运动方向突变时仍能保持较稳定的权重分配；对于对角线和反对角线轨迹，PA-DQN 在穿越建筑密集区域后的轨迹恢复更快，表明其对环境切换具有更好的自适应性；对于随机游走路径，PA-DQN 输出轨迹与真实轨迹之间的局部震荡最弱，说明该方法在不规则运动条件下仍具有较好的稳健性。
+\begin{figure}[htbp]
+    \ContinuedFloat
+    \centering
+    \begin{minipage}[t]{0.76\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ch3/反对角线轨迹对比图.png}
+        
+        \small (c) 反对角线轨迹
+    \end{minipage}
+
+    \vspace{0.8em}
+
+    \begin{minipage}[t]{0.76\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ch3/随机游走轨迹对比图.png}
+        
+        \small (d) 随机游走轨迹
+    \end{minipage}
+    \caption{不同算法在典型测试轨迹下的连续定位结果对比（下）}
+\end{figure}
+
+从图~\ref{fig:ch3_typical_trajectories} 可以进一步做更细致分析。在子图 (a) 的矩形轨迹中，各算法在转角位置附近的表现差异最为明显，PA-DQN 在路径拐角处未出现明显的外扩偏离，说明其在运动方向突变时仍能保持较稳定的权重分配。在子图 (b) 和子图 (c) 的对角线与反对角线轨迹中，PA-DQN 在穿越建筑密集区域或 LOS/NLOS 切换区段后能够更快地恢复至真实轨迹附近，局部折线化现象较弱，说明其对环境切换具有更好的自适应能力。在子图 (d) 的随机游走轨迹中，PA-DQN 输出轨迹与真实轨迹之间的局部震荡最弱，说明该方法在不规则运动条件下仍具有较好的稳健性和连续性。综合来看，PA-DQN 在四类典型轨迹下均表现出更好的轨迹贴合能力与局部稳定性。这表明，所提方法的优势不仅体现在总体 RMSE 和 P95 等统计指标上，也体现在典型路径和环境切换区段的可视化轨迹表现中。
 \subsection{不同信噪比条件下的鲁棒性分析}
 \label{subsec:3_6_4}
 
