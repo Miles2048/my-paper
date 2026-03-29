@@ -1,0 +1,179 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\@writefile{toc}{\contentsline {chapter}{\numberline {第三章\hspace  {.3em}}基于物理感知深度强化学习的单目标自适应融合定位方法}{23}{chapter.3}\protected@file@percent }
+\@writefile{lof}{\addvspace {10.0pt}}
+\@writefile{lot}{\addvspace {10.0pt}}
+\newlabel{ch:single_target_fusion}{{三}{23}{基于物理感知深度强化学习的单目标自适应融合定位方法}{chapter.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}问题描述与总体框架}{23}{section.3.1}\protected@file@percent }
+\newlabel{sec:3_1}{{3.1}{23}{问题描述与总体框架}{section.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}单目标定位任务定义与场景约束}{23}{subsection.3.1.1}\protected@file@percent }
+\newlabel{subsec:3_1_1}{{3.1.1}{23}{单目标定位任务定义与场景约束}{subsection.3.1.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-1}{\ignorespaces 复杂城市环境下基于低成本无人机平台的单目标非法终端定位场景示意图}}{24}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:single_target_scenario}{{3-1}{24}{复杂城市环境下基于低成本无人机平台的单目标非法终端定位场景示意图}{figure.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}多源异构定位信息加权融合模型}{24}{subsection.3.1.2}\protected@file@percent }
+\newlabel{subsec:3_1_2}{{3.1.2}{24}{多源异构定位信息加权融合模型}{subsection.3.1.2}{}}
+\newlabel{eq:3_1_fusion_model}{{3-1}{24}{多源异构定位信息加权融合模型}{equation.3.1}{}}
+\newlabel{eq:3_2_weight_constraint}{{3-2}{24}{多源异构定位信息加权融合模型}{equation.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.3}面向动态信道的马尔可夫决策过程建模}{25}{subsection.3.1.3}\protected@file@percent }
+\newlabel{subsec:3_1_3}{{3.1.3}{25}{面向动态信道的马尔可夫决策过程建模}{subsection.3.1.3}{}}
+\newlabel{eq:3_3_mdp_tuple}{{3-3}{26}{面向动态信道的马尔可夫决策过程建模}{equation.3.3}{}}
+\newlabel{eq:3_4_q_definition}{{3-4}{26}{面向动态信道的马尔可夫决策过程建模}{equation.3.4}{}}
+\newlabel{eq:3_5_bellman}{{3-5}{26}{面向动态信道的马尔可夫决策过程建模}{equation.3.5}{}}
+\newlabel{eq:3_6_dqn_loss}{{3-6}{26}{面向动态信道的马尔可夫决策过程建模}{equation.3.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-2}{\ignorespaces 单目标自适应融合定位问题的马尔可夫决策过程建模示意图}}{27}{figure.caption.15}\protected@file@percent }
+\newlabel{fig:mdp_modeling_framework}{{3-2}{27}{单目标自适应融合定位问题的马尔可夫决策过程建模示意图}{figure.caption.15}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}复杂环境观测构造与物理先验信息提取}{27}{section.3.2}\protected@file@percent }
+\newlabel{sec:3_2}{{3.2}{27}{复杂环境观测构造与物理先验信息提取}{section.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}射线追踪场景建模与环境先验获取}{27}{subsection.3.2.1}\protected@file@percent }
+\newlabel{subsec:3_2_1}{{3.2.1}{27}{射线追踪场景建模与环境先验获取}{subsection.3.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-3}{\ignorespaces 基于 OSM 数据的复杂城市三维场景建模示意图}}{28}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:ch3_osm_city_model}{{3-3}{28}{基于 OSM 数据的复杂城市三维场景建模示意图}{figure.caption.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}多源观测量生成与特征表达}{28}{subsection.3.2.2}\protected@file@percent }
+\newlabel{subsec:3_2_2}{{3.2.2}{28}{多源观测量生成与特征表达}{subsection.3.2.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-4}{\ignorespaces 多源观测生成与融合输入构造流程示意图}}{29}{figure.caption.17}\protected@file@percent }
+\newlabel{fig:multi_source_observation_flow}{{3-4}{29}{多源观测生成与融合输入构造流程示意图}{figure.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-5}{\ignorespaces 定位输出链与状态构造链的并行结构关系示意图}}{30}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:multi_source_parallel_chain}{{3-5}{30}{定位输出链与状态构造链的并行结构关系示意图}{figure.caption.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.3}RMS 时延扩展与几何一致性特征构造}{30}{subsection.3.2.3}\protected@file@percent }
+\newlabel{subsec:3_2_3}{{3.2.3}{30}{RMS 时延扩展与几何一致性特征构造}{subsection.3.2.3}{}}
+\newlabel{eq:3_8_rms_delay}{{3-7}{30}{RMS 时延扩展与几何一致性特征构造}{equation.3.7}{}}
+\newlabel{eq:3_9_rssi_var}{{3-8}{30}{RMS 时延扩展与几何一致性特征构造}{equation.3.8}{}}
+\newlabel{eq:3_10_geo_consistency}{{3-9}{31}{RMS 时延扩展与几何一致性特征构造}{equation.3.9}{}}
+\newlabel{eq:3_11_state_vector}{{3-10}{31}{RMS 时延扩展与几何一致性特征构造}{equation.3.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-6}{\ignorespaces 物理感知状态空间构成示意图}}{31}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:ch3_physics_aware_state_space}{{3-6}{31}{物理感知状态空间构成示意图}{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}基于 Q-Learning 的 RL-IFA 基线自适应融合算法}{31}{section.3.3}\protected@file@percent }
+\newlabel{sec:3_3}{{3.3}{31}{基于 Q-Learning 的 RL-IFA 基线自适应融合算法}{section.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}状态空间设计}{31}{subsection.3.3.1}\protected@file@percent }
+\newlabel{subsec:3_3_1}{{3.3.1}{31}{状态空间设计}{subsection.3.3.1}{}}
+\newlabel{eq:3_12_rlifa_error}{{3-11}{32}{状态空间设计}{equation.3.11}{}}
+\newlabel{eq:3_13_rlifa_state}{{3-12}{32}{状态空间设计}{equation.3.12}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-7}{\ignorespaces RL-IFA 基线算法中基于融合误差的状态空间设计示意图}}{32}{figure.caption.20}\protected@file@percent }
+\newlabel{fig:rlifa_state_design}{{3-7}{32}{RL-IFA 基线算法中基于融合误差的状态空间设计示意图}{figure.caption.20}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.2}动作空间设计}{33}{subsection.3.3.2}\protected@file@percent }
+\newlabel{subsec:3_3_2}{{3.3.2}{33}{动作空间设计}{subsection.3.3.2}{}}
+\newlabel{eq:3_14_rlifa_weight_constraint}{{3-13}{33}{动作空间设计}{equation.3.13}{}}
+\newlabel{eq:3_15_rlifa_weight_update}{{3-14}{33}{动作空间设计}{equation.3.14}{}}
+\newlabel{eq:3_16_rlifa_pdr_weight}{{3-15}{33}{动作空间设计}{equation.3.15}{}}
+\newlabel{eq:3_17_rlifa_action_set}{{3-16}{33}{动作空间设计}{equation.3.16}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3-1}{\ignorespaces RL-IFA 基线算法中离散动作空间定义}}{34}{table.caption.21}\protected@file@percent }
+\newlabel{tab:rlifa_action_space}{{3-1}{34}{RL-IFA 基线算法中离散动作空间定义}{table.caption.21}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-8}{\ignorespaces RL-IFA 基线算法中动作空间与权重更新关系示意图}}{34}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:rlifa_action_design}{{3-8}{34}{RL-IFA 基线算法中动作空间与权重更新关系示意图}{figure.caption.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.3}奖励函数设计}{35}{subsection.3.3.3}\protected@file@percent }
+\newlabel{subsec:3_3_3}{{3.3.3}{35}{奖励函数设计}{subsection.3.3.3}{}}
+\newlabel{eq:rlifa_reward_error}{{3-17}{35}{奖励函数设计}{equation.3.17}{}}
+\newlabel{eq:rlifa_reward}{{3-18}{35}{奖励函数设计}{equation.3.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.4}权重更新机制}{35}{subsection.3.3.4}\protected@file@percent }
+\newlabel{subsec:3_3_4}{{3.3.4}{35}{权重更新机制}{subsection.3.3.4}{}}
+\newlabel{eq:3_19_rlifa_weight_vector}{{3-19}{35}{权重更新机制}{equation.3.19}{}}
+\newlabel{eq:3_20_rlifa_weight_update}{{3-20}{36}{权重更新机制}{equation.3.20}{}}
+\newlabel{eq:3_21_rlifa_weight_pdr}{{3-21}{36}{权重更新机制}{equation.3.21}{}}
+\newlabel{eq:3_22_rlifa_fused_next}{{3-22}{36}{权重更新机制}{equation.3.22}{}}
+\newlabel{eq:3_23_rlifa_epsilon_greedy}{{3-23}{36}{权重更新机制}{equation.3.23}{}}
+\newlabel{eq:3_24_rlifa_q_update}{{3-24}{36}{权重更新机制}{equation.3.24}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}融合物理先验知识的 PA-DQN 智能体设计}{37}{section.3.4}\protected@file@percent }
+\newlabel{sec:3_4}{{3.4}{37}{融合物理先验知识的 PA-DQN 智能体设计}{section.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4.1}物理感知状态空间设计}{38}{subsection.3.4.1}\protected@file@percent }
+\newlabel{subsec:3_4_1}{{3.4.1}{38}{物理感知状态空间设计}{subsection.3.4.1}{}}
+\newlabel{eq:pa_dqn_state}{{3-25}{38}{物理感知状态空间设计}{equation.3.25}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-9}{\ignorespaces PA-DQN 物理感知状态空间及其与融合决策关系示意图}}{39}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:pa_dqn_state_space}{{3-9}{39}{PA-DQN 物理感知状态空间及其与融合决策关系示意图}{figure.caption.23}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4.2}抑制轨迹锯齿的增量式连续动作空间设计}{39}{subsection.3.4.2}\protected@file@percent }
+\newlabel{subsec:3_4_2}{{3.4.2}{39}{抑制轨迹锯齿的增量式连续动作空间设计}{subsection.3.4.2}{}}
+\newlabel{eq:3_18_continuous_action}{{3-26}{39}{抑制轨迹锯齿的增量式连续动作空间设计}{equation.3.26}{}}
+\newlabel{eq:3_19_weight_increment}{{3-27}{40}{抑制轨迹锯齿的增量式连续动作空间设计}{equation.3.27}{}}
+\newlabel{eq:3_21_projection}{{3-28}{40}{抑制轨迹锯齿的增量式连续动作空间设计}{equation.3.28}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-10}{\ignorespaces PA-DQN 增量式连续动作空间与权重更新机制示意图}}{40}{figure.caption.24}\protected@file@percent }
+\newlabel{fig:ch3_continuous_action_space}{{3-10}{40}{PA-DQN 增量式连续动作空间与权重更新机制示意图}{figure.caption.24}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4.3}兼顾短时抗扰与长时纠偏的奖励函数设计}{40}{subsection.3.4.3}\protected@file@percent }
+\newlabel{subsec:3_4_3}{{3.4.3}{40}{兼顾短时抗扰与长时纠偏的奖励函数设计}{subsection.3.4.3}{}}
+\newlabel{eq:3_26_pa_reward_error}{{3-29}{40}{兼顾短时抗扰与长时纠偏的奖励函数设计}{equation.3.29}{}}
+\newlabel{eq:3_27_pa_reward_smooth}{{3-30}{41}{兼顾短时抗扰与长时纠偏的奖励函数设计}{equation.3.30}{}}
+\newlabel{eq:3_28_pa_reward_total}{{3-31}{41}{兼顾短时抗扰与长时纠偏的奖励函数设计}{equation.3.31}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4.4}物理感知深度 Q 网络结构设计}{41}{subsection.3.4.4}\protected@file@percent }
+\newlabel{subsec:3_4_4}{{3.4.4}{41}{物理感知深度 Q 网络结构设计}{subsection.3.4.4}{}}
+\newlabel{eq:3_4_4_q_output}{{3-32}{41}{物理感知深度 Q 网络结构设计}{equation.3.32}{}}
+\newlabel{eq:3_4_4_target}{{3-33}{41}{物理感知深度 Q 网络结构设计}{equation.3.33}{}}
+\newlabel{eq:3_4_4_loss}{{3-34}{41}{物理感知深度 Q 网络结构设计}{equation.3.34}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3-2}{\ignorespaces PA-DQN 智能体训练与决策流程伪代码}}{42}{table.caption.25}\protected@file@percent }
+\newlabel{tab:pa_dqn_algorithm}{{3-2}{42}{PA-DQN 智能体训练与决策流程伪代码}{table.caption.25}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.5}实验结果分析}{42}{section.3.5}\protected@file@percent }
+\newlabel{sec:3_6}{{3.5}{42}{实验结果分析}{section.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.1}实验设置}{43}{subsection.3.5.1}\protected@file@percent }
+\newlabel{subsec:3_6_1}{{3.5.1}{43}{实验设置}{subsection.3.5.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3-3}{\ignorespaces PA-DQN 网络训练参数配置}}{44}{table.caption.26}\protected@file@percent }
+\newlabel{tab:ch3_training_parameters}{{3-3}{44}{PA-DQN 网络训练参数配置}{table.caption.26}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-11}{\ignorespaces PA-DQN 训练阶段的收敛过程示意图}}{45}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:ch3_training_convergence}{{3-11}{45}{PA-DQN 训练阶段的收敛过程示意图}{figure.caption.27}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.2}总体性能比较}{45}{subsection.3.5.2}\protected@file@percent }
+\newlabel{subsec:3_6_2}{{3.5.2}{45}{总体性能比较}{subsection.3.5.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3-4}{\ignorespaces 不同算法在总体测试集上的性能对比}}{45}{table.caption.28}\protected@file@percent }
+\newlabel{tab:ch3_overall_performance}{{3-4}{45}{不同算法在总体测试集上的性能对比}{table.caption.28}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.3}典型轨迹结果分析}{46}{subsection.3.5.3}\protected@file@percent }
+\newlabel{subsec:3_6_3}{{3.5.3}{46}{典型轨迹结果分析}{subsection.3.5.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-12}{\ignorespaces 不同算法在典型测试轨迹下的连续定位结果对比}}{47}{figure.caption.29}\protected@file@percent }
+\newlabel{fig:ch3_typical_trajectories}{{3-12}{47}{不同算法在典型测试轨迹下的连续定位结果对比}{figure.caption.29}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-13}{\ignorespaces 典型轨迹局部区段的定位结果放大对比图}}{47}{figure.caption.30}\protected@file@percent }
+\newlabel{fig:ch3_local_zoom}{{3-13}{47}{典型轨迹局部区段的定位结果放大对比图}{figure.caption.30}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.4}不同信噪比条件下的鲁棒性分析}{48}{subsection.3.5.4}\protected@file@percent }
+\newlabel{subsec:3_6_4}{{3.5.4}{48}{不同信噪比条件下的鲁棒性分析}{subsection.3.5.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-14}{\ignorespaces 不同算法在多种信噪比条件下的 RMSE 对比曲线}}{48}{figure.caption.31}\protected@file@percent }
+\newlabel{fig:ch3_snr_rmse_curve}{{3-14}{48}{不同算法在多种信噪比条件下的 RMSE 对比曲线}{figure.caption.31}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3-15}{\ignorespaces 不同算法在多种信噪比条件下的 P95 对比曲线}}{49}{figure.caption.32}\protected@file@percent }
+\newlabel{fig:ch3_snr_p95_curve}{{3-15}{49}{不同算法在多种信噪比条件下的 P95 对比曲线}{figure.caption.32}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.5}消融实验分析}{49}{subsection.3.5.5}\protected@file@percent }
+\newlabel{subsec:3_6_5}{{3.5.5}{49}{消融实验分析}{subsection.3.5.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3-5}{\ignorespaces PA-DQN 消融实验结果}}{49}{table.caption.33}\protected@file@percent }
+\newlabel{tab:ablation_padqn}{{3-5}{49}{PA-DQN 消融实验结果}{table.caption.33}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.6}本节小结}{50}{subsection.3.5.6}\protected@file@percent }
+\newlabel{subsec:3_6_6}{{3.5.6}{50}{本节小结}{subsection.3.5.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.6}本章小结}{50}{section.3.6}\protected@file@percent }
+\newlabel{sec:3_7}{{3.6}{50}{本章小结}{section.3.6}{}}
+\@setckpt{Chapter/Chapter_04_Fusion}{
+\setcounter{page}{51}
+\setcounter{equation}{34}
+\setcounter{enumi}{3}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{3}
+\setcounter{section}{6}
+\setcounter{subsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{15}
+\setcounter{table}{5}
+\setcounter{parentequation}{0}
+\setcounter{caption@flags}{2}
+\setcounter{continuedfloat}{0}
+\setcounter{KVtest}{1}
+\setcounter{subfigure}{0}
+\setcounter{subfigure@save}{0}
+\setcounter{lofdepth}{1}
+\setcounter{subtable}{0}
+\setcounter{subtable@save}{0}
+\setcounter{lotdepth}{1}
+\setcounter{nlinenum}{0}
+\setcounter{ALC@unique}{0}
+\setcounter{ALC@line}{0}
+\setcounter{ALC@rem}{0}
+\setcounter{ALC@depth}{0}
+\setcounter{float@type}{16}
+\setcounter{algorithm}{0}
+\setcounter{IEEEsubequation}{0}
+\setcounter{LT@tables}{0}
+\setcounter{LT@chunks}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{section@level}{0}
+\setcounter{Item}{6}
+\setcounter{Hfootnote}{0}
+\setcounter{Hy@AnnotLevel}{0}
+\setcounter{bookmark@seq@number}{59}
+\setcounter{lstnumber}{1}
+\setcounter{lstlisting}{0}
+}
