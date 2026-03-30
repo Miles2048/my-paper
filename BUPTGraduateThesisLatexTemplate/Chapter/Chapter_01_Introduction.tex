@@ -24,7 +24,7 @@
 
 在低轨卫星信号底层结构解析方面，相关研究已经从早期的可行性验证逐步发展到面向定位的结构化处理。Humphreys等人分别从 Starlink Ku 波段下行链路的信号结构解析和载波相位跟踪两个角度开展研究，揭示了其同步结构、参考特征以及可用于定位处理的底层物理线索\cite{Humphreys2023StarlinkSignal,Humphreys2023StarlinkCarrier}。随后，Dureppagari等人进一步指出，Starlink 下行链路中存在类正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）的可利用结构，为更稳定的相关积累和精确定位处理提供了依据\cite{Dureppagari2024StarlinkOFDM}。Kozhaya 等人的工作则进一步从定位、导航与授时（Positioning, Navigation and Timing, PNT）角度系统总结了 Starlink 机会信号在观测量提取与定位实验中的可行链路\cite{Kozhaya2025StarlinkPNT}。这些研究表明，非合作条件下的低轨卫星下行信号并非完全不可利用，其底层结构具有被逆向解析并服务于定位感知的现实可能性。
 
-然而，低轨机会信号的可利用性并不意味着可直接获得高精度测距结果。Qin等人进一步分析了 Starlink Ku 波段下行链路的定时特性，指出其在短时尺度上存在明显的非连续跃变和相位抖动\cite{Qin2025Timing}。这说明低轨卫星下行信号虽然具有机会信号定位潜力，但其时间稳定性并不完全满足传统高精度到达时间（Time of Arrival, TOA）或到达时间差（Time Difference of Arrival, TDOA）定位对严格同步的要求，因此直接将其视为理想测距基准仍存在明显局限。围绕低轨机会信号定位和系统级反制问题，Yin等人\cite{Yin2025LEO}系统梳理了国内相关研究进展，指出低轨卫星终端排查问题已经由早期的单站监测逐步走向多平台协同监测。
+然而，低轨卫星下行信号的可利用性并不意味着可直接获得高精度测距结果。Qin等人进一步分析了 Starlink Ku 波段下行链路的定时特性，指出其在短时尺度上存在明显的非连续跃变和相位抖动\cite{Qin2025Timing}。这说明低轨卫星下行信号虽然可为定位提供一定观测基础，但其时间稳定性并不完全满足传统高精度到达时间（Time of Arrival, TOA）或到达时间差（Time Difference of Arrival, TDOA）定位对严格同步的要求，因此直接将其视为理想测距基准仍存在明显局限。从无线定位与终端排查的系统应用角度看，Yin等人\cite{Yin2025LEO}系统梳理了国内相关研究进展，指出低轨卫星终端监测技术已经由早期的单站监测逐步走向多平台协同监测。
 
 在复杂城市环境中，传统几何定位技术仍是研究的重要基础，但其局限也越来越清晰。3GPP 技术报告（Technical Report, TR）38.901 给出了统一的城市传播场景建模框架，强调多径簇、时延扩展、角扩展以及视距/非视距（Line-of-Sight / Non-Line-of-Sight, LOS/NLOS）条件对无线观测结果的系统性影响\cite{TR38901}。针对空地链路和卫星地面链路，Al-Hourani 等人以及 Gapeyenko 等人分别从低空平台路径损耗和卫星到地面链路衰落的角度说明，仰角、遮挡和城市几何结构会显著改变观测质量分布\cite{AlHourani2014A2GPathLoss,Gapeyenko2017SatGroundPathLoss}。这些研究从传播机理层面表明，复杂城市环境中的定位误差并不只是随机噪声放大，而是与遮挡条件、多径结构和观测几何共同耦合的系统性退化。
 
