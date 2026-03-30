@@ -148,39 +148,36 @@ X_{\sigma},
 其中，$P_t$ 为发射功率，$PL(d_0)$ 为参考距离 $d_0$ 处的路径损耗，$n$ 为路径损耗指数，$X_{\sigma}$ 为阴影衰落项。式~\eqref{eq:2_9_log_distance_model} 表明，即使在相同几何距离条件下，接收功率也会因环境遮挡、建筑分布和局部传播条件差异而出现明显波动。在城市峡谷环境中，这种波动通常表现得更为剧烈，从而使 RSSI 与传播距离之间的对应关系明显弱化\cite{TR38901}。
 
 
-\subsection{Starlink Ku 波段下行链路帧结构}
+\subsection{Starlink Ku 波段下行链路信号模型}
 \label{subsec:2_2_2}
 
-现有公开研究表明，Starlink 在 Ku 波段下行链路中采用正交频分复用（OFDM）体制，其信号在频域上表现为边界清晰、带内功率近似平坦的多子载波结构\cite{Humphreys2024Starlink,Humphreys2023StarlinkSignal,Kozhaya2025StarlinkPNT}。对于第 $m$ 帧中第 $i$ 个 OFDM 符号，其基带时域信号可写为
+现有公开研究表明，Starlink 在 Ku 波段下行链路中采用正交频分复用（OFDM）体制，其信号在频域上表现为边界清晰、带内功率近似平坦的多子载波结构\cite{Humphreys2024Starlink,Humphreys2023StarlinkSignal,Kozhaya2025StarlinkPNT}。结合前文给出的多径传播模型，可将第 $m$ 帧中第 $i$ 个 OFDM 符号在接收端的复基带信号统一表示为
 \begin{equation}
-x^{(0)}_{m,i}(t)
+r_{m,i}(t)
 =
+\sum_{l=1}^{L}
+\alpha_l
+\left(
 \sum_{k=0}^{N-1}
 X_{m,i,k}
-\exp(j2\pi Fkt),
-\qquad 0\le t<T,
-\label{eq:2_10_starlink_ofdm_symbol}
+\exp\big(j2\pi \tfrac{F_s}{N}k(t-\tau_l)\big)
+\right)
++
+n(t), \qquad -T_g \le t < \frac{N}{F_s},
+\label{eq:2_10_starlink_received_signal}
 \end{equation}
-其中，$X_{m,i,k}$ 表示第 $k$ 个子载波上的复值调制符号，$N$ 为子载波数，$F$ 为子载波间隔，$T$ 为有效符号时长。对于基带离散化 OFDM 模型，若采样率记为 $F_s$，则有
-\begin{equation}
-T=\frac{N}{F_s},
-\qquad
-F=\frac{F_s}{N},
-\label{eq:2_11_starlink_ofdm_basic}
-\end{equation}
-其中，$F_s$ 表示离散基带建模中的采样率。
-
-为抑制多径条件下的符号间干扰，Starlink OFDM 符号前还包含循环前缀。若循环前缀长度对应的时间为 $T_g$，则加入循环前缀后的 OFDM 符号时长为
+其中，$X_{m,i,k}$ 表示第 $k$ 个子载波上的复值调制符号，$N$ 为子载波数，$\alpha_l$ 和 $\tau_l$ 分别表示第 $l$ 条传播路径的复衰落系数和传播时延，$n(t)$ 为接收噪声，$F_s$ 表示离散基带模型中的采样率，$T_g$ 表示循环前缀长度对应的时间。由式~\eqref{eq:2_10_starlink_received_signal} 可知，有效符号时长为 $T=\frac{N}{F_s}$，子载波间隔为 $F=\frac{F_s}{N}$。若进一步考虑循环前缀，则总符号时长可写为
 \begin{equation}
 T_{\mathrm{sym}}=T+T_g.
-\label{eq:2_12_starlink_symbol_duration}
+\label{eq:2_11_starlink_symbol_duration}
 \end{equation}
+式~\eqref{eq:2_10_starlink_received_signal} 表明，Starlink 下行链路在接收端的可观测信号结构由多子载波调制、多径时延扩展以及信道衰落共同决定。
 结合近期针对 Starlink Ku 波段下行链路时序特性的研究可以看出，该类信号虽然具有较大的带宽和较强的可观测性，能够为检测与定位处理提供可利用的时频结构信息，但其时序特征并不像专用导航信号那样始终保持严格稳定。受系统时钟调度策略和具体实现机制影响，其帧边界、符号时序等特征在不同条件下可能出现一定波动。因此，在后续定位处理中，Starlink 下行信号更适合被视为一种可利用的机会观测源，用于辅助提取相关观测量，而不宜直接作为理想、严格同步且高稳定的测距时间基准\cite{Qin2025Timing}。
 
 \section{经典定位方法}
 \label{sec:2_3}
 
-在前文中，本文已经对非法低轨卫星终端排查任务场景、系统总体架构以及低轨卫星信号模型进行了分析。可以看到，信号在从地面发送至无人机的过程中，会受到多径叠加、阴影衰落和非视距遮挡的共同影响，这些因素直接决定了接收端所获取观测量的质量。为了建立后续智能定位算法的基础，本节首先对 RSSI、AoA、TOA、TDOA 和 PDR 等经典定位方法的基本模型、几何约束以及在复杂城市环境中的局限性进行统一总结\cite{Torrieri1984PassiveLocation,Wymeersch2009CooperativeLocalization}。
+在前文中，本文已经对非法低轨卫星终端排查任务场景、系统总体架构以及低轨卫星信号模型进行了分析。可以看到，信号在从地面发送至无人机的过程中，会受到多径叠加、阴影衰落和非视距遮挡的共同影响，这些因素直接决定了接收端所获取观测量的质量。为了建立后续智能定位算法的基础，本节首先对 RSSI、AoA、TOA、TDOA 和 PDR 等经典定位方法的基本模型总结\cite{Torrieri1984PassiveLocation,Wymeersch2009CooperativeLocalization}。
 
 \subsection{RSSI 定位}
 \label{subsec:2_3_1}
