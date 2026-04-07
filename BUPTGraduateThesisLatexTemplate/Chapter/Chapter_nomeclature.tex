@@ -2,11 +2,23 @@
 \zihao{5}
 \renewcommand\arraystretch{1.15}
 
-\noindent
-\begin{tabular}{p{3.2cm}p{10.8cm}}
+\begin{longtable}{p{3.2cm}p{10.8cm}}
   \toprule
   符号 & 代表意义 \\
   \midrule
+  \endfirsthead
+
+  \toprule
+  符号 & 代表意义 \\
+  \midrule
+  \endhead
+
+  \bottomrule
+  \endfoot
+
+  \bottomrule
+  \endlastfoot
+
   \(X_{m,i,k}\) & 第 \(m\) 帧第 \(i\) 个 OFDM 符号在第 \(k\) 个子载波上的复值调制符号 \\
   \(F_s\) & OFDM 离散模型采样率 \\
   \(T_{\mathrm{sym}}\) & OFDM 总符号时长 \\
@@ -16,6 +28,8 @@
   \(P_t^{\mathrm{PDR}}\) & 时刻 \(t\) 由 PDR 递推得到的位置估计 \\
   \(P_t^{\mathrm{Fused}}\) & 时刻 \(t\) 的融合定位结果 \\
   \(P_t^{\mathrm{GT}}\) & 时刻 \(t\) 的真实位置 \\
+  \(\mathbf{z}_t\) & 时刻 \(t\) 的当前观测特征向量 \\
+  \(\mathbf{c}_t\) & 时刻 \(t\) 与传播复杂度和观测质量相关的特征向量 \\
   \(\boldsymbol{\omega}_t\) & 时刻 \(t\) 的融合权重向量 \\
   \(S_t\) & 时刻 \(t\) 的物理感知状态向量 \\
   \(a_t\) & 强化学习智能体在时刻 \(t\) 选择的权重调整动作 \\
@@ -29,6 +43,7 @@
   \(X_{i,j}\) & 第 \(i\) 架无人机对第 \(j\) 个目标样本的单节点观测特征向量 \\
   \(N\) & 协同定位网络中的无人机节点数量 \\
   \(M\) & 目标区域离散后的栅格类别数 \\
+  \(\rho_{\mathrm{cov}}\) & 多无人机协同观测中的有效节点覆盖率 \\
   \(\mathbf{h}_i\) & 第 \(i\) 个节点经过图注意力网络提取后的高层特征表示 \\
   \(\alpha_{ij}\) & 图注意力机制中节点 \(j\) 对节点 \(i\) 的注意力权重 \\
   \(\mathbf{z}^{T},\mathbf{z}^{S}\) & 教师网络与学生网络输出的分类得分向量 \\
@@ -37,7 +52,6 @@
   \(\mathbf{p}^{\mathrm{gt}}\) & 目标终端真实位置向量 \\
   \(\hat{\mathbf{p}}\) & 模型预测得到的目标位置向量 \\
   \(e\) & 单样本定位误差 \\
-  \bottomrule
-\end{tabular}
+\end{longtable}
 
 \end{nomenclature}
