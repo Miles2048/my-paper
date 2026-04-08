@@ -1,19 +1,22 @@
 \chapter{基于空间信号表征的多目标协同鲁棒定位方法}
 \label{ch:multi_target_localization}
 
+\section{引文}
+\label{sec:4_1}
+
 本章将复杂城市环境下的多目标并发定位问题重构为空间信号场表征与区域级判别的联合建模问题，并在此基础上进一步考虑多无人机协同条件下的节点掉点与残缺观测问题。与传统方法主要依赖离散峰值检测、逐目标分离或局部判定不同，本章从问题建模和能力迁移两个层面建立统一方法框架，以同时应对稀疏扫描、多径鬼影和协同网络不完整带来的定位退化。
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.94\textwidth]{ch4/第四章图.png}
-    \caption{第四章多目标协同定位方法总体思路示意图}
+    \caption{第四章多目标协同定位方法总体思路}
     \label{fig:ch4_overall_innovation_framework}
 \end{figure}
 
 如图~\ref{fig:ch4_overall_innovation_framework} 所示，本章的研究内容主要包括两个方面。第一，面向完整或相对完整观测条件下的多目标并发定位问题，针对无人机空间扫描带来的离散采样、局部多峰和多径鬼影影响，引入 Radio Map 作为中间空间表征，将离散峰值检测问题转化为空间信号场成像与区域级判别问题，以实现多目标系统的高保真建模。第二，面向多无人机协同过程中的节点掉点场景，构建完整观测教师网络与残缺观测学生网络之间的知识迁移框架，将完整协同观测条件下获得的空间判别能力迁移到残缺观测场景，从而提升掉点条件下的多目标协同定位鲁棒性。基于上述两方面内容，本章前半部分首先围绕多目标并发定位的场景建模、稀疏采样特性与信号成像展开分析，后半部分再进一步讨论节点掉点条件下的知识蒸馏与鲁棒协同定位问题。
 
 \section{基于无人机空间扫描的多目标定位问题描述与信号成像建模}
-\label{sec:4_1}
+\label{sec:4_2}
 
 本节面向完整或相对完整观测条件下的多目标定位问题，依次讨论任务定义、多无人机节点掉点影响以及稀疏采样、噪声扰动和局部多峰现象，并在此基础上建立后续 Radio Map 信号成像与区域级判别的建模基础。
 
@@ -47,7 +50,7 @@
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.84\textwidth]{ch4/1_多目标并发定位场景示意图.jpg}
-    \caption{基于低成本无人机平台的地面多目标非法终端并发定位场景示意图}
+    \caption{基于低成本无人机平台的地面多目标非法终端并发定位场景}
     \label{fig:ch4_multi_target_uav_scenario}
 \end{figure}
 
@@ -152,7 +155,7 @@ r_i+\delta_i,
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.84\textwidth]{ch4/图片.png}
-    \caption{无人机稀疏采样与噪声扰动条件下的局部多峰现象示意图}
+    \caption{无人机稀疏采样与噪声扰动条件下的局部多峰现象}
     \label{fig:ch4_sparse_sampling_multipeak}
 \end{figure}
 
@@ -263,7 +266,7 @@ r(\mathbf{x})=\max_{\mathbf{y}\in\mathcal{N}(\mathbf{x})}r(\mathbf{y})
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.86\textwidth]{ch4/4_离散观测到RadioMap成像流程图.jpg}
-    \caption{从无人机离散观测到 Radio Map 成像及跨模态区域判别的整体流程示意图}
+    \caption{从无人机离散观测到 Radio Map 成像及跨模态区域判别的整体流程}
     \label{fig:ch4_cross_modal_pipeline}
 \end{figure}
 
@@ -346,7 +349,7 @@ P_r(\mathbf{q}_i)
         \centering
         \includegraphics[width=\textwidth]{ch4/12_城市峡谷RadioMap三维图B.png}
     \end{minipage}
-    \caption{复杂城市传播场条件下 Radio Map 的三维可视化示意图（一）}
+    \caption{复杂城市传播场条件下 Radio Map 的三维可视化结果（一）}
     \label{fig:ch4_radiomap_3d_gallery_1}
 \end{figure}
 
@@ -363,7 +366,7 @@ P_r(\mathbf{q}_i)
         \centering
         \includegraphics[width=\textwidth]{ch4/14_阴影衰落RadioMap三维图D.png}
     \end{minipage}
-    \caption{复杂城市传播场条件下 Radio Map 的三维可视化示意图（二）}
+    \caption{复杂城市传播场条件下 Radio Map 的三维可视化结果（二）}
     \label{fig:ch4_radiomap_3d_gallery_2}
 \end{figure}
 
@@ -445,7 +448,7 @@ OpenStreetMap 是一种开放式地理信息数据源，能够提供道路、建
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.84\textwidth]{ch4/7_OSM与MATLAB工具链建模流程图.png}
-    \caption{基于 OSM 与 MATLAB 工具链的复杂城市场景建模流程示意图}
+    \caption{基于 OSM 与 MATLAB 工具链的复杂城市场景建模流程}
     \label{fig:ch4_osm_siteviewer_toolchain}
 \end{figure}
 
@@ -481,7 +484,7 @@ N_t^{\mathrm{act}} = |\mathcal{V}_{t}^{\mathrm{act}}|,
 
 对于传统依赖固定维度输入的定位模型而言，节点掉点通常只能通过补零、截断或丢弃样本等方式处理。这类做法虽然能够在形式上维持输入结构，但无法恢复缺失节点原本提供的空间感知信息，也难以有效利用残存节点之间仍然存在的协同约束关系，因此定位性能往往会随掉点程度上升而快速退化。基于这一认识，本章进一步考虑：如何在随机掉点条件下，仍尽可能保持接近完整网络的定位能力。
 
-从方法设计角度看，仅依赖残缺观测本身进行监督学习，其性能上界天然受限于缺失后的信息量。为此，本文引入教师—学生知识蒸馏框架：教师模型在完整节点条件下学习全局空间映射关系，学生模型在随机掉点条件下完成定位推断，并通过蒸馏监督逼近完整网络的判别能力。由此，后续 4.3 节将围绕完整观测知识如何迁移到残缺观测条件下展开具体建模。
+从方法设计角度看，仅依赖残缺观测本身进行监督学习，其性能上界天然受限于缺失后的信息量。为此，本文引入教师—学生知识蒸馏框架：教师模型在完整节点条件下学习全局空间映射关系，学生模型在随机掉点条件下完成定位推断，并通过蒸馏监督逼近完整网络的判别能力。由此，后续 4.4 节将围绕完整观测知识如何迁移到残缺观测条件下展开具体建模。
 
 \subsection{知识蒸馏基本原理与掉点鲁棒定位建模}
 \label{subsec:4_3_2}
@@ -566,6 +569,17 @@ q^{T}_{m}
 
 为实现完整无人机网络知识向掉点网络的有效迁移，本文构建了一个面向多无人机协同定位任务的教师—学生蒸馏架构。该架构以图神经网络为基础，将多无人机空间观测组织为动态图输入，并分别在完整节点条件和残缺节点条件下完成全局特征提取与栅格分类。其核心目标在于：教师网络在全量节点观测下学习完整的空间几何映射规律，学生网络在随机掉点条件下利用残存节点信息完成定位推断，并通过蒸馏损失逼近教师网络的输出分布。
 
+图~\ref{fig:kd_teacher_student_architecture} 给出了本文教师—学生网络架构示意图。图中左侧为完整无人机网络输入下的教师模型，右侧为随机掉点后的学生模型，中间为蒸馏损失与监督关系。该图对应展示了完整图输入、残缺图输入、动态建图、图注意力特征提取、全局池化读出以及分类输出等关键模块之间的连接关系。
+
+\vspace{-0.2em}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{ch4/KD网络架构图.png}
+    \caption{教师—学生网络架构}
+    \label{fig:kd_teacher_student_architecture}
+\end{figure}
+\vspace{-0.4em}
+
 从输入形式上看，教师网络与学生网络对应两类不同的观测状态。教师网络接收完整无人机网络所形成的全量节点特征集合
 \begin{equation}
 \mathcal{X}_{\mathrm{complete}}
@@ -648,15 +662,6 @@ e_{ij}
 在训练阶段，教师网络的 logits 经过温度系数 \(T_d\) 的 softmax 变换后，生成软标签分布，用于向学生网络提供额外监督；学生网络则同时保留两类输出，一类用于与真实栅格标签计算交叉熵损失，另一类用于与教师网络输出进行蒸馏匹配。由此，整个架构形成了完整观测指导残缺观测、教师网络监督学生网络的训练闭环。需要强调的是，这里教师模型与学生模型在总体结构上保持一致，但二者的输入视角不同：前者对应完整图输入，后者对应掉点后的残缺图输入。正是这种输入不对称性，使蒸馏学习能够在不增加额外硬件成本的情况下，将完整网络中学得的全局空间判别能力迁移到掉点网络中。
 
 从结构设计角度看，本文所构建的教师—学生网络具有三点特点。其一，采用图结构建模多无人机观测，避免了固定维度输入对节点完整性的严格依赖；其二，利用图注意力机制增强节点间空间相关性的自适应建模能力，使网络在掉点条件下仍可充分利用残存节点信息；其三，通过图级读出和统一分类头，将不同规模的节点输入映射为一致的栅格分类输出，从而为后续蒸馏训练提供了结构基础。
-
-图~\ref{fig:kd_teacher_student_architecture} 给出了本文教师—学生网络架构示意图。图中左侧为完整无人机网络输入下的教师模型，右侧为随机掉点后的学生模型，中间为蒸馏损失与监督关系。该图对应展示了完整图输入、残缺图输入、动态建图、图注意力特征提取、全局池化读出以及分类输出等关键模块之间的连接关系。
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.96\textwidth]{ch4/KD网络架构图.png}
-    \caption{教师—学生网络架构示意图}
-    \label{fig:kd_teacher_student_architecture}
-\end{figure}
 
 综上，本文教师—学生网络架构并不是两个独立分类器的简单并列，而是一个围绕完整观测知识向残缺观测迁移而构建的协同学习框架。教师网络负责在全量节点条件下学习完整的空间几何映射规律，学生网络则在随机掉点条件下，通过图注意力传播、图级特征读出和蒸馏监督，尽可能恢复完整网络条件下的定位能力。基于该架构，下一小节将进一步给出面向残缺观测的蒸馏训练策略。
 

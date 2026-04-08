@@ -35,9 +35,9 @@
 \subsection{单目标自适应定位研究现状}
 \label{subsec:1_2_2}
 
-相较于定位基础研究，单目标定位方法更加关注如何在复杂环境和连续轨迹条件下实现稳定的位置推断。在传统方法方面，基于 TDOA、AoA 和滤波估计的联合定位仍然是当前研究中的重要基线。相关研究中，已有学者提出基于扩展卡尔曼滤波的 TDOA 与 AoA 融合定位方法\cite{EKFTDOAAOA2025}，将方向观测和时间差观测统一纳入状态估计框架，在一定程度上缓解了单一观测量的不稳定问题；同时，经典双曲定位估计器和面向 NLOS 偏差的鲁棒变换与优化方法也被用于提升复杂环境中的定位稳定性\cite{Chan1994Hyperbolic,Wang2013TDOANLOS}。这类方法的优势在于物理意义清晰、求解路径成熟，适合作为复杂环境定位的参考基线，但其性能仍较强依赖于噪声统计和观测模型的正确性。当非视距偏差、多径扰动和异常观测显著增多时，固定模型和静态融合规则往往难以持续适应观测质量的动态变化。
+相较于定位基础研究，单目标定位方法更加关注如何在复杂环境和连续轨迹条件下实现稳定的位置推断。在传统方法方面，基于 TDOA、AoA 和滤波估计的联合定位仍然是当前研究中的重要基线。相关研究中，已有学者提出基于扩展卡尔曼滤波的 TDOA 与 AoA 融合定位方法\cite{EKFTDOAAOA2025}，将方向观测和时间差观测统一纳入状态估计框架，在一定程度上缓解了单一观测量的不稳定问题；同时，经典双曲定位估计器和面向 NLOS 偏差的鲁棒变换与优化方法也被用于提升复杂环境中的定位稳定性\cite{Chan1994Hyperbolic,Wang2013TDOANLOS}。进一步地，Scazzoli等基于无人机实测对比了 RSSI 与 AoA 两类定位方案，指出不同机载观测形式在精度表现和几何稳定性上存在明显差异\cite{Scazzoli2024RSSIAoA}。这类方法的优势在于物理意义清晰、求解路径成熟，适合作为复杂环境定位的参考基线，但其性能仍较强依赖于噪声统计和观测模型的正确性。当非视距偏差、多径扰动和异常观测显著增多时，固定模型和静态融合规则往往难以持续适应观测质量的动态变化。
 
-面向上述问题，强化学习方法为单目标定位中的自适应决策提供了新的技术路径。Mnih 等人提出的深度 Q 网络（Deep Q-Network, DQN）\cite{Mnih2015DQN}以及 Lillicrap 等人提出的深度确定性策略梯度方法\cite{ddpg}为复杂状态下的动态策略学习提供了通用框架；在定位相关应用中，深度强化学习已被用于协同定位调度、无人机干扰源搜索和多无人机协同决策等任务\cite{Peng2019DRLLocalization,Wu2019QLearningLocalization,MultiUAVDRL2025,Drones2025CooperativeTarget}。这类方法的共同特点在于，将观测选择、权重调整或协同策略显式建模为时序决策过程，从而提高系统在动态环境中的自适应能力。
+面向上述问题，强化学习方法为单目标定位中的自适应决策提供了新的技术路径。Mnih 等人提出的深度 Q 网络（Deep Q-Network, DQN）\cite{Mnih2015DQN}以及 Lillicrap 等人提出的深度确定性策略梯度方法\cite{ddpg}为复杂状态下的动态策略学习提供了通用框架；在定位相关应用中，深度强化学习已被用于协同定位调度、无人机干扰源搜索和多无人机协同决策等任务\cite{Peng2019DRLLocalization,Wu2019QLearningLocalization,MultiUAVDRL2025,Drones2025CooperativeTarget}。Shurrab 等人进一步提出面向 UAV 目标定位任务的强化学习框架，利用 Q-learning 与 DQN 提升未知目标搜索与定位过程中的自主决策能力\cite{Shurrab2023UAVRL}。这类方法的共同特点在于，将观测选择、权重调整或协同策略显式建模为时序决策过程，从而提高系统在动态环境中的自适应能力。
 
 总体来看，现有研究已经认识到复杂环境中观测质量持续波动对单目标定位性能的影响，也开始引入强化学习提升权重调整与决策自适应性；但仍缺少将传播机理先验显式纳入状态建模、面向连续轨迹调权的单目标自适应融合方法。
 
@@ -46,9 +46,9 @@
 
 在多目标并发和协同定位场景中，围绕无线电环境重构与空间信号场建模的研究近年来发展较快。Zappone等人和 Jiang等人分别从环境感知通信和信道知识地图（Channel Knowledge Map, CKM）的角度，提出将无线传播环境组织为可查询、可更新的无线电地图（Radio Map）/无线电环境地图（Radio Environment Map, REM）中间表示，用于刻画目标区域内信号强度的空间分布结构，并为后续定位和感知任务提供统一表征\cite{Zappone2021CKM,Jiang2022CKMTutorial}。在此基础上，Li等人将城市环境语义显式引入 UAV 辅助 Radio Map 构建过程，提高了重构精度与可解释性\cite{Li2022UAVRadioMapSemantics}；Bazerque和Giannakis则通过贝叶斯主动学习说明了采样策略与 Radio Map 重构质量之间的强耦合关系\cite{Bazerque2010BayesianRadioMap}。这些工作表明，Radio Map/REM 已从早期的经验插值工具逐步演化为融合环境语义、传播机理与空间结构先验的中间表示层。
 
-随着深度学习方法引入频谱制图领域，RadioUNet、深度补全式 Radio Map 估计以及数据驱动的频谱制图方法进一步表明，空间信号场重构已经从传统插值逐步发展为融合空间结构先验和学习表征能力的系统问题\cite{RadioUNet2021,Teganya2022DeepCompletion,Romero2022SpectrumCartography,Feng2025RadioMapSurvey}。进一步地，Ye等人提出物理知识启发扩散模型以改善稀疏采样条件下的 REM 重构质量，HiFiRadio 相关研究和 RadioTransformer 模型则分别从高保真三维重建和多尺度特征表达角度推动了复杂环境中无线电地图构建技术的发展\cite{Ye2025PhysicsREM,HiFiRadio2025,RadioTransformer2025}。与此相对应，多阶段无人机采样与航迹规划方法以及自主 UAV 频谱测绘工作表明，对于低成本无人机平台而言，定位识别性能不仅取决于后端算法，也与前端空间观测策略密切相关\cite{UAVREMPlanning2025,SpectrumSurveying2022,Chen2017UAVRadioMap}。相比于传统几何定位，这类方法更强调利用空间场分布、区域纹理和上下文结构完成目标区域判别与定位识别。
+随着深度学习方法引入频谱制图领域，RadioUNet、深度补全式 Radio Map 估计以及数据驱动的频谱制图方法进一步表明，空间信号场重构已经从传统插值逐步发展为融合空间结构先验和学习表征能力的系统问题\cite{RadioUNet2021,Teganya2022DeepCompletion,Romero2022SpectrumCartography,Feng2025RadioMapSurvey}。进一步地，Ye等人提出物理知识启发扩散模型以改善稀疏采样条件下的 REM 重构质量，HiFiRadio 相关研究和 RadioTransformer 模型则分别从高保真三维重建和多尺度特征表达角度推动了复杂环境中无线电地图构建技术的发展\cite{Ye2025PhysicsREM,HiFiRadio2025,RadioTransformer2025}。赵海涛等进一步提出基于深度去噪正则化的 Radio Map 重构方法，在稀疏采样和复杂环境条件下提升了无人机通信场景中的重构精度与鲁棒性\cite{Zhao2025DeepDenoisingRadioMap}。与此相对应，多阶段无人机采样与航迹规划方法以及自主 UAV 频谱测绘工作表明，对于低成本无人机平台而言，定位识别性能不仅取决于后端算法，也与前端空间观测策略密切相关\cite{UAVREMPlanning2025,SpectrumSurveying2022,Chen2017UAVRadioMap}。相比于传统几何定位，这类方法更强调利用空间场分布、区域纹理和上下文结构完成目标区域判别与定位识别。
 
-与此同时，知识迁移和知识蒸馏也为多节点协同定位中的模型压缩与鲁棒推断提供了可行路径。Hinton 等人提出的知识蒸馏框架\cite{Hinton2015KD}表明，教师模型中蕴含的判别知识可以通过软标签或中间表征迁移到学生模型中，从而缓解边缘设备算力受限和观测缺失带来的性能退化问题；而面向多智能体学习的蒸馏方法也说明，知识蒸馏不仅可以用于压缩，还可以服务于协同策略迁移与鲁棒决策\cite{Tseng2022OfflineMARLKD}。然而，现有研究大多面向一般无线感知、协同控制或模型压缩任务，针对低成本无人机平台下的多目标定位识别场景，仍缺少与传播机理、空间采样和掉点条件紧耦合的系统性算法设计。
+与此同时，Guerra 等人在动态 UAV 网络中进一步将多目标检测与环境映射联合建模，并利用强化学习实现协同导航和任务分配，说明检测、建图与协同策略之间存在紧密耦合关系\cite{Guerra2023JointDetectionMapping}。知识迁移和知识蒸馏也为多节点协同定位中的模型压缩与鲁棒推断提供了可行路径。Hinton 等人提出的知识蒸馏框架\cite{Hinton2015KD}表明，教师模型中蕴含的判别知识可以通过软标签或中间表征迁移到学生模型中，从而缓解边缘设备算力受限和观测缺失带来的性能退化问题；而面向多智能体学习的蒸馏方法也说明，知识蒸馏不仅可以用于压缩，还可以服务于协同策略迁移与鲁棒决策\cite{Tseng2022OfflineMARLKD}。然而，现有研究大多面向一般无线感知、协同控制或模型压缩任务，针对低成本无人机平台下的多目标定位识别场景，仍缺少与传播机理、空间采样和掉点条件紧耦合的系统性算法设计。
 
 总体来看，现有研究虽为 UAV 稀疏扫描、多目标识别和协同推断提供了重要基础，但在多径鬼影、局部多峰和节点掉点并存条件下，仍缺少面向定位识别一体化的系统方案。
 
@@ -75,6 +75,16 @@
 
 \section{论文结构安排}
 \label{sec:1_5}
+
+\begin{figure}[H]
+    \centering
+    \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,trim=12 12 12 12,clip]{ch1/全文结构图.png}}
+    \caption{全文结构图}
+    \label{fig:thesis_structure_overview}
+\end{figure}
+
+为便于从整体上把握全文的逻辑关系，图~\ref{fig:thesis_structure_overview} 给出了本文的结构安排示意。
+
 本文共分为五章，各章节的具体内容安排如下：
 \begin{enumerate}[label=,leftmargin=0pt,itemindent=2em]
     \item 第 1 章：绪论。介绍研究背景及意义，梳理国内外研究现状，明确现有研究问题，并阐述本文的主要研究内容与创新点。
@@ -83,12 +93,3 @@
     \item 第 4 章：多目标协同定位方法。围绕多目标并发定位、Radio Map 信号成像以及节点掉点条件下的知识蒸馏鲁棒定位展开研究与实验分析。
     \item 第 5 章：结论与展望。总结全文研究工作，指出创新点与不足，并对未来研究方向进行展望。
 \end{enumerate}
-
-为便于从整体上把握全文的逻辑关系，图~\ref{fig:thesis_structure_overview} 给出了本文的结构安排示意。
-
-\begin{figure}[htbp]
-    \centering
-    \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,trim=12 12 12 12,clip]{ch1/全文结构图.png}}
-    \caption{全文结构示意图}
-    \label{fig:thesis_structure_overview}
-\end{figure}

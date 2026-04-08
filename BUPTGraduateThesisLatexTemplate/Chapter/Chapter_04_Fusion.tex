@@ -1,6 +1,15 @@
 \chapter{基于物理感知深度强化学习的单目标自适应融合定位方法}
 \label{ch:single_target_fusion}
 
+\section{引文}
+\label{sec:3_intro}
+
+在复杂城市环境中，基于低成本无人机平台的非法低轨卫星终端定位任务具有明显的动态性和不确定性。一方面，RSSI、AoA 和 PDR 等不同观测量在物理意义、误差来源和退化方式上存在显著差异，其可靠性会随遮挡状态、多径结构、非视距传播以及目标运动过程持续变化；另一方面，固定权重融合和静态规则方法通常难以及时反映环境变化带来的观测质量波动，容易在局部场景切换时出现权重失配、误差累积和轨迹抖动等问题。因此，如何在复杂传播环境下根据观测状态动态调整融合策略，是单目标连续定位中需要解决的关键问题。
+
+针对上述问题，本章围绕单目标自适应融合定位展开研究，核心思路是将多源观测融合从静态参数设定问题转化为面向时变环境的序列决策问题。在总体框架上，本文首先构建由 RSSI、AoA 和 PDR 组成的多源定位输出链，并通过射线追踪建模和观测统计信息提取传播复杂度、功率波动性以及跨源一致性等物理先验特征，形成物理感知状态表征；随后，在此基础上引入强化学习机制，根据当前状态自适应生成融合权重，实现对多源观测结果的动态调节。与仅依赖后验误差反馈的传统方法相比，该思路能够使融合决策从结果修正进一步前移到环境感知与状态驱动层面，从而提升复杂环境下的定位精度、轨迹稳定性与鲁棒性。
+
+本章的内容组织如下：首先，在问题描述与总体框架部分给出单目标连续定位任务定义、系统信息流以及自适应加权融合模型，并将动态调权过程形式化为马尔可夫决策过程；随后，围绕物理感知状态构造，分别介绍复杂城市场景建模、定位输出链与状态构造链的并行关系，以及 RMS 时延扩展、RSSI 方差和几何一致性等关键特征的建模方式；在此基础上，先构建误差反馈驱动的 RL-IFA 基础强化学习融合方法，再进一步从状态表示、动作设计、奖励函数和价值函数求解四个方面对其进行改进，形成本文提出的 PA-DQN 方法；最后，通过总体性能对比、典型轨迹分析、信噪比鲁棒性分析与消融实验，对所提方法的有效性进行验证。
+
 \section{问题描述与总体框架}
 \label{sec:3_1}
 
@@ -16,7 +25,7 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.78\textwidth]{ch3/1_单目标非法终端定位场景示意图.png}
-    \caption{复杂城市环境下单目标非法终端定位场景示意图}
+    \caption{复杂城市环境下单目标非法终端定位场景}
     \label{fig:single_target_scenario}
 \end{figure}
 
@@ -187,7 +196,7 @@ y_t=r+\gamma\max_{a'}Q(s',a';\theta^-),
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.82\textwidth]{ch3/2_单目标自适应融合定位MDP建模示意图.png}
-    \caption{单目标自适应融合定位问题的马尔可夫决策过程建模示意图}
+    \caption{单目标自适应融合定位问题的马尔可夫决策过程建模}
     \label{fig:mdp_modeling_framework}
 \end{figure}
 
@@ -206,7 +215,7 @@ y_t=r+\gamma\max_{a'}Q(s',a';\theta^-),
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.82\textwidth]{ch3/3_复杂城市三维场景建模示意图.jpg}
-    \caption{基于 OSM 数据的复杂城市三维场景建模示意图}
+    \caption{基于 OSM 数据的复杂城市三维场景建模}
     \label{fig:ch3_osm_city_model}
 \end{figure}
 
@@ -224,7 +233,7 @@ y_t=r+\gamma\max_{a'}Q(s',a';\theta^-),
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.84\textwidth]{ch3/5_定位输出链与状态构造链并行关系图.png}
-    \caption{定位输出链与状态构造链的并行结构关系示意图}
+    \caption{定位输出链与状态构造链的并行结构关系}
     \label{fig:multi_source_parallel_chain}
 \end{figure}
 
@@ -289,7 +298,7 @@ D_{\mathrm{RF-PDR}},\,
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.84\textwidth]{ch3/6_物理感知状态空间构成示意图.jpg}
-    \caption{物理感知状态空间构成示意图}
+    \caption{物理感知状态空间构成}
     \label{fig:ch3_physics_aware_state_space}
 \end{figure}
 
@@ -338,7 +347,7 @@ s_t=
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.80\textwidth]{ch3/7_RLIFA误差状态空间设计示意图.png}
-    \caption{RL-IFA 基线算法中基于融合误差的状态空间设计示意图}
+    \caption{RL-IFA 基线算法中基于融合误差的状态空间设计}
     \label{fig:rlifa_state_design}
 \end{figure}
 
@@ -411,7 +420,7 @@ a_1,a_2,\ldots,a_9
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.82\textwidth]{ch3/8_RLIFA动作空间与权重更新关系图.png}
-    \caption{RL-IFA 基线算法中动作空间与权重更新关系示意图}
+    \caption{RL-IFA 基线算法中动作空间与权重更新关系}
     \label{fig:rlifa_action_design}
 \end{figure}
 
@@ -578,8 +587,8 @@ D_{\mathrm{RF\mbox{-}PDR},t},\,
 % TODO 字多 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.82\textwidth]{ch3/2026-04-07 14.07.25.jpg}
-    \caption{PA-DQN 物理感知状态空间及其与融合决策关系示意图}
+    \includegraphics[width=0.82\textwidth]{ch3/图39物理感知状态.png}
+    \caption{PA-DQN 物理感知状态空间及其与融合决策关系}
     \label{fig:pa_dqn_state_space}
 \end{figure}
 
@@ -636,8 +645,8 @@ x\in\{\mathrm{RSSI},\mathrm{AoA}\},
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.84\textwidth]{ch3/10_PADQN离散增量动作空间与权重更新机制图.png}
-    \caption{PA-DQN 离散增量动作空间与权重更新机制示意图}
+    \includegraphics[width=0.84\textwidth]{ch3/10_PADQN机制.jpg}
+    \caption{PA-DQN 离散增量动作空间与权重更新机制}
     \label{fig:ch3_continuous_action_space}
 \end{figure}
 
@@ -696,15 +705,7 @@ Q(\mathbf{S}_t,a_{|\mathcal{A}|};\theta)
 \label{eq:3_4_4_q_output}
 \end{equation}
 
-从结构上看，PA-DQN 采用全连接前馈神经网络架构。网络目标值依据 Bellman 最优性原理计算：
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.86\textwidth]{ch3/DQN网络架构图.png}
-    \caption{PA-DQN 中 Q 网络的结构示意图}
-    \label{fig:ch3_pa_dqn_network}
-\end{figure}
-
-图~\ref{fig:ch3_pa_dqn_network} 给出了本文 PA-DQN 中 Q 网络的基本结构。该网络以前文构造的物理感知状态向量 \(\mathbf{S}_t\) 作为输入，经多层全连接映射提取状态表征后，输出动作空间中各候选权重调整动作对应的 Q 值估计。由此，智能体可根据网络输出选择当前时刻的最优调权动作，并与后续目标网络和经验回放机制共同完成稳定训练。
+从结构上看，PA-DQN 采用全连接前馈神经网络架构。图~\ref{fig:ch3_pa_dqn_network} 给出了本文 PA-DQN 中 Q 网络的基本结构。该网络以前文构造的物理感知状态向量 \(\mathbf{S}_t\) 作为输入，经多层全连接映射提取状态表征后，输出动作空间中各候选权重调整动作对应的 Q 值估计。由此，智能体可根据网络输出选择当前时刻的最优调权动作，并与后续目标网络和经验回放机制共同完成稳定训练。网络目标值依据 Bellman 最优性原理计算：
 
 \noindent 网络目标值依据 Bellman 最优性原理计算：
 \begin{equation}
@@ -727,7 +728,16 @@ y_t-Q(\mathbf{S}_t,a_t;\theta)
 \end{equation}
 
 为了提升训练过程的稳定性，本文在 PA-DQN 中引入经验回放机制和目标网络机制。经验回放用于打破样本间的时序相关性，而目标网络则减弱了目标值随训练同步波动带来的震荡问题。PA-DQN 并不是简单地对当前状态进行一次前向推理，而是通过经验回放与目标网络共同构成稳定训练机制。该结构既保证了高维状态下的函数逼近能力，也降低了训练过程中的价值震荡风险。为更清晰地说明 PA-DQN 智能体在训练阶段与在线决策阶段的执行流程，本文进一步将其主要步骤整理为表~\ref{tab:pa_dqn_algorithm} 所示的伪代码。
-\begin{table}[htbp]
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.76\textwidth,trim=10 10 10 10,clip]{ch3/DQN网络架构图.png}
+    \caption{PA-DQN 中 Q 网络结构}
+    \label{fig:ch3_pa_dqn_network}
+\end{figure}
+
+从图~\ref{fig:ch3_pa_dqn_network} 可以进一步看出，PA-DQN 的 Q 网络并不是直接对原始状态向量进行简单拼接后输入，而是首先按照物理特征、信号特征、一致性特征和历史决策信息四类分量分别进行嵌入映射，使不同来源的状态信息在进入主干网络前完成初步编码。随后，各分组特征通过 Token 形式组织并完成融合，再经过多层前馈网络提取更高层的联合状态表征，从而在保持各类先验信息差异性的同时增强特征之间的交互能力。网络右侧的 DQN 决策头进一步将融合后的状态表示映射为动作空间中各候选调权动作的 Q 值估计，用于衡量不同动作在当前环境状态下的长期收益。这样的结构设计使智能体既能够关注传播环境、多源观测质量和历史权重之间的联合关系，也能够通过统一的价值函数学习实现对整个动作空间的整体评估。在此基础上，PA-DQN 在训练阶段结合经验回放与目标网络完成稳定更新，在在线阶段则仅需输入当前状态即可快速输出调权动作。为更清晰地说明其训练与决策流程，本文将主要执行步骤整理为表~\ref{tab:pa_dqn_algorithm} 所示的伪代码。
+\vspace{-0.3em}
+\begin{table}[H]
 \centering
 \small
 \caption{PA-DQN 智能体训练与决策流程伪代码}
@@ -778,7 +788,7 @@ y_t-Q(\mathbf{S}_t,a_t;\theta)
 \bottomrule
 \end{tabular}
 \end{table}
-
+\vspace{-0.4em}
 
 \section{实验结果分析}
 \label{sec:3_6}
@@ -824,13 +834,13 @@ y_t-Q(\mathbf{S}_t,a_t;\theta)
 
 图~\ref{fig:ch3_training_convergence} 给出了 PA-DQN 在训练阶段的收敛过程示意，用于展示奖励值、训练损失或平均误差随训练轮数的变化趋势。
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.78\textwidth]{ch3/11_PADQN训练收敛过程示意图.png}
-    \caption{PA-DQN 训练阶段的收敛过程示意图}
+    \caption{PA-DQN 训练阶段的收敛过程}
     \label{fig:ch3_training_convergence}
 \end{figure}
-
+\vspace{-0.3em}
 从图~\ref{fig:ch3_training_convergence} 可以看出，PA-DQN 在训练阶段整体呈现出较稳定的收敛趋势。随着训练轮数增加，平均奖励持续上升而训练损失逐步下降，说明智能体能够逐步学习到有效的调权策略。其中，在前 400 个 epoch 内，平均奖励提升较快、训练损失下降明显，表明此阶段是策略快速学习和参数持续修正的主要过程。进一步地，图中约在 400 个 epoch 左右出现了较明显的收敛拐点，此后平均奖励的提升幅度明显减小、训练损失的下降速度也逐步放缓，表明模型在该轮数附近已经基本完成主要策略学习。继续将训练轮数增加至 800 个 epoch 虽仍可带来小幅优化，但整体收益已不明显。这说明本文采用的物理感知状态设计、离散增量动作更新方式以及 DQN 训练机制能够较好地支撑策略学习过程，同时当前训练轮数设置也能够兼顾收敛性与训练开销。
 
 \subsection{性能对比实验}
