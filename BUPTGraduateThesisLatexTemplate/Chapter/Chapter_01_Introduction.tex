@@ -4,13 +4,13 @@
 \section{研究背景及意义}
 \label{sec:1_1}
 
-随着低轨卫星通信系统的快速发展，空天地一体化网络正在成为新一代通信体系的重要组成部分。以 Starlink 为代表的低轨卫星星座在推动广域接入和应急通信能力提升的同时，也带来了新的监管问题\cite{Stock2025LEOPNTSurvey,Fan2024MassiveSoOP,Kozhaya2025StarlinkPNT}。非合作低轨卫星终端可能通过异常接入、违规辐射或非法占用链路资源，对无线电管理秩序和通信安全造成潜在影响。因此，面向非合作低轨卫星终端的快速发现与定位，已经成为复杂电磁环境下值得关注的现实问题\cite{Yin2025LEO}。
+随着低轨卫星通信系统的快速发展，空天地一体化网络正在成为新一代通信体系的重要组成部分。以 Starlink 为代表的低轨卫星星座在推动广域接入和应急通信能力提升的同时，也带来了新的监管问题\cite{Stock2025LEOPNTSurvey,Fan2024MassiveSoOP,Kozhaya2025StarlinkPNT,Kassas2023MultiConstellationLEO}。非合作低轨卫星终端可能通过异常接入、违规辐射或非法占用链路资源，对无线电管理秩序和通信安全造成潜在影响。因此，面向非合作低轨卫星终端的快速发现与定位，已经成为复杂电磁环境下值得关注的现实问题\cite{Yin2025LEO}。
 
 与常规通信终端不同，非合作低轨卫星终端通常不主动提供同步信息和位置辅助信息，监测系统只能依赖其辐射信号及相关传播特征进行终端感知与定位\cite{Stock2025LEOPNTSurvey,Humphreys2023StarlinkSignal,Torrieri1984PassiveLocation,Weiss2011DirectGeolocation}。与此同时，这类目标往往分布在高层建筑密集区域、街道走廊或复杂城市边缘地带，传播过程中普遍存在遮挡、反射、绕射和散射等现象。受复杂城市环境影响，传统定位方法所依赖的理想视距条件往往难以满足，单一观测量容易出现失真，定位精度和稳定性均受到明显制约\cite{TR38901,Guvenc2009TOASurvey,Wang2013TDOANLOS,deSousa2018NLOSRayTracing}。
 
 在此背景下，无人机平台为非合作终端排查提供了新的实现路径。相较于固定监测站，无人机具有机动性强、部署灵活和空间视角可调等特点，能够在较短时间内进入目标区域上空或周边，对地面终端开展机动观测。尤其在复杂街区和局部遮挡场景下，无人机更容易形成有效观测几何，因此在非合作终端排查任务中具有较高的应用潜力\cite{AlHourani2014A2GPathLoss,Chen2017UAVRadioMap,Li2022UAVRadioMapSemantics,SpectrumSurveying2022}。与此同时，低成本无人机平台在载荷、续航、算力和阵列规模等方面又存在明显约束，这决定了相关定位方法不能简单照搬高成本、大规模地面监测系统的技术路线，而需要围绕平台特点重新设计\cite{Wymeersch2009CooperativeLocalization}。
 
-从现有方法看，复杂城市环境下机载平台的非合作终端定位仍面临两方面突出问题。其一，单目标场景下，不同观测量对环境变化和运动状态的敏感性并不一致，其有效性会随传播条件和轨迹过程持续变化，导致固定权重或静态融合规则难以稳定适应复杂场景。其二，多目标场景下，无人机空间扫描所形成的观测通常具有稀疏性和不均匀性，这使得目标区域的空间响应表达不完整，容易引发局部多峰和多径鬼影问题；与此同时，多无人机协同过程中还可能出现节点掉点现象，从而进一步加大定位难度\cite{RadioUNet2021,Romero2022SpectrumCartography}。如何结合无人机平台的机动观测特点，在复杂环境中实现稳定、准确且具有鲁棒性的定位识别，是本文研究的核心问题。
+从现有方法看，复杂城市环境下机载平台的非合作终端定位仍面临两方面突出问题。其一，单目标场景下，不同观测量对环境变化和运动状态的敏感性并不一致，其有效性会随传播条件和轨迹过程持续变化，导致固定权重或静态融合规则难以稳定适应复杂场景。其二，多目标场景下，无人机空间扫描所形成的观测通常具有稀疏性和不均匀性，这使得目标区域的空间响应表达不完整，容易引发局部多峰和多径鬼影问题；与此同时，多无人机协同过程中还可能出现节点掉点现象，从而进一步加大定位难度\cite{RadioUNet2021,Romero2022SpectrumCartography}。这里的“掉点”是指协同网络中的部分无人机节点因链路中断、通信异常或平台失效而暂时无法提供有效观测。其直接结果是协同观测由完整输入退化为残缺输入，进而削弱系统对目标空间位置的联合判别能力。如何结合无人机平台的机动观测特点，在复杂环境中实现稳定、准确且具有鲁棒性的定位识别，是本文研究的核心问题。
 
 本文围绕低成本无人机平台下非合作低轨卫星终端的定位识别问题开展研究，分别面向单目标连续定位与多目标并发定位两类任务展开方法设计。前者重点解决复杂环境中多源观测的自适应融合问题，后者重点解决空间扫描条件下的目标识别、信号成像和鲁棒协同定位问题。相关研究不仅面向非合作终端排查这一具体应用，也对复杂环境中的无人机无线感知与智能定位具有一定参考价值。
 
@@ -22,13 +22,13 @@
 \subsection{低轨卫星定位基础研究现状}
 \label{subsec:1_2_1}
 
-在低轨卫星下行信号结构解析方面，相关研究已经从早期的可行性验证逐步发展到面向定位的结构化处理。Humphreys等人分别从 Starlink Ku 波段下行链路的信号结构解析和载波相位跟踪两个角度开展研究，揭示了其同步结构、参考特征以及可用于定位处理的底层物理线索\cite{Humphreys2023StarlinkSignal,Humphreys2023StarlinkCarrier}。随后，Dureppagari等人进一步指出，Starlink 下行链路中存在类正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）的可利用结构，为更稳定的相关积累和精确定位处理提供了依据\cite{Dureppagari2024StarlinkOFDM}。Kozhaya 等人的工作则进一步从定位、导航与授时（Positioning, Navigation and Timing, PNT）角度系统总结了 Starlink 下行信号在观测量提取与定位实验中的可行链路\cite{Kozhaya2025StarlinkPNT}。这些研究表明，非合作条件下的低轨卫星下行信号并非完全不可利用，其底层结构具有被逆向解析并服务于定位感知的现实可能性。
+在低轨卫星下行信号结构解析方面，相关研究已经从早期的可行性验证逐步发展到面向定位的结构化处理。Humphreys等人分别从 Starlink Ku 波段下行链路的信号结构解析和载波相位跟踪两个角度开展研究，揭示了其同步结构、参考特征以及可用于定位处理的底层物理线索\cite{Humphreys2023StarlinkSignal,Humphreys2023StarlinkCarrier}。进一步研究指出，Starlink 下行链路中存在类正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）的可利用结构，为更稳定的相关积累和精确定位处理提供了依据\cite{Dureppagari2024StarlinkOFDM,Mooseli2025WidebandStarlink}。Kozhaya 等人的工作则进一步从定位、导航与授时（Positioning, Navigation and Timing, PNT）角度系统总结了 Starlink 下行信号在观测量提取与定位实验中的可行链路，并在多星座低轨机会信号的盲信标估计、Doppler 跟踪和定位处理方面给出了进一步验证\cite{Kozhaya2025StarlinkPNT,Kozhaya2023BlindBeaconMultiConstellation}。这些研究表明，非合作条件下的低轨卫星下行信号并非完全不可利用，其底层结构具有被逆向解析并服务于定位感知的现实可能性。
 
-然而，低轨卫星下行信号的可利用性并不意味着可直接获得高精度测距结果。Qin等人进一步分析了 Starlink Ku 波段下行链路的定时特性，指出其在短时尺度上存在明显的非连续跃变和相位抖动\cite{Qin2025Timing}。这说明低轨卫星下行信号虽然可为定位提供一定观测基础，但其时间稳定性并不完全满足传统高精度到达时间（Time of Arrival, TOA）或到达时间差（Time Difference of Arrival, TDOA）定位对严格同步的要求，因此直接将其视为理想测距基准仍存在明显局限。从系统应用角度看，Yin等人\cite{Yin2025LEO}系统梳理了国内相关研究进展，指出低轨卫星终端监测技术已经由早期的单站监测逐步走向多平台协同监测。
+然而，低轨卫星下行信号的可利用性并不意味着可直接获得高精度测距结果。Qin等人进一步分析了 Starlink Ku 波段下行链路的定时特性，指出其在短时尺度上存在明显的非连续跃变和相位抖动\cite{Qin2025Timing,Stock2025ErrorSourceStarlink}。这说明低轨卫星下行信号虽然可为定位提供一定观测基础，但其时间稳定性并不完全满足传统高精度到达时间（Time of Arrival, TOA）或到达时间差（Time Difference of Arrival, TDOA）定位对严格同步的要求，因此直接将其视为理想测距基准仍存在明显局限。从系统应用角度看，相关综述工作\cite{Yin2025LEO,AllahvirdiZadeh2025DopplerBroadbandLEO}系统梳理了低轨卫星机会信号定位技术的发展脉络，指出相关监测与定位手段已经由早期的单站监测逐步走向多平台协同监测。
 
 在复杂城市环境中，传统几何定位技术仍是研究的重要基础，但其局限也越来越清晰。3GPP 技术报告（Technical Report, TR）38.901 给出了统一的城市传播场景建模框架，强调多径簇、时延扩展、角扩展以及视距/非视距（Line-of-Sight / Non-Line-of-Sight, LOS/NLOS）条件对无线观测结果的系统性影响\cite{TR38901}。针对空地链路和卫星地面链路，Al-Hourani 等人以及 Gapeyenko 等人分别从低空平台路径损耗和卫星到地面链路衰落的角度说明，仰角、遮挡和城市几何结构会显著改变观测质量分布\cite{AlHourani2014A2GPathLoss,Gapeyenko2017SatGroundPathLoss}。这些研究从传播机理层面表明，复杂城市环境中的定位误差并不只是随机噪声放大，而是与遮挡条件、多径结构和观测几何共同耦合的系统性退化。
 
-在经典定位方法方面，Chan 和 Ho 的双曲定位估计器给出了 TDOA 定位的高效求解框架，而后续关于 TOA/TDOA 与 NLOS 偏差的综述工作则系统总结了复杂环境下的典型退化机理与缓解路径\cite{Chan1994Hyperbolic,Guvenc2009TOASurvey}。进一步地，Wang和Ho针对 NLOS 条件下的 TDOA 偏差提出了鲁棒估计方法，Dickerson等人则基于真实无人机飞行数据分析了 TDOA 定位在城市混合视距与非视距环境中的性能变化，结果表明受非视距偏差、观测几何和带宽条件共同影响，TDOA 误差在复杂场景中会出现显著发散\cite{Wang2013TDOANLOS,Dickerson2025TDOA,deSousa2018NLOSRayTracing}。这些研究共同说明，在高层建筑密集区域，仅依赖 TOA、TDOA 或 AoA 等几何观测建立位置约束往往难以获得稳定结果。
+在经典定位方法方面，Chan 和 Ho 的双曲定位估计器给出了 TDOA 定位的高效求解框架，而后续关于 TOA/TDOA 与 NLOS 偏差的综述工作则系统总结了复杂环境下的典型退化机理与缓解路径\cite{Chan1994Hyperbolic,Guvenc2009TOASurvey}。进一步地，Wang和Ho针对 NLOS 条件下的 TDOA 偏差提出了鲁棒估计方法，Dickerson等人则基于真实无人机飞行数据分析了 TDOA 定位在城市混合视距与非视距环境中的性能变化，Takayama 等人进一步从城市环境中的运动多普勒定位角度给出了相关性能评估结果，El-Kouba 等人则从到达角与 Doppler 联合观测的角度给出了 Starlink 和 OneWeb 条件下的位置估计结果，表明受非视距偏差、观测几何和带宽条件共同影响，复杂场景下的几何定位误差会出现显著发散\cite{Wang2013TDOANLOS,Dickerson2025TDOA,Takayama2024KinematicDopplerUrban,ElKouba2025DOADopplerLEO,deSousa2018NLOSRayTracing}。这些研究共同说明，在高层建筑密集区域，仅依赖 TOA、TDOA 或 AoA 等几何观测建立位置约束往往难以获得稳定结果。
 
 总体来看，现有研究已说明低轨卫星下行信号能够为定位提供观测基础，也揭示了复杂城市传播环境对几何定位性能的系统性制约；但在同步误差、传播失真和观测几何退化共同作用下，复杂场景中的稳定高精度定位仍面临明显挑战。
 
@@ -76,19 +76,19 @@
 \section{论文结构安排}
 \label{sec:1_5}
 本文共分为五章，各章节的具体内容安排如下：
-\begin{itemize}
+\begin{enumerate}[label=,leftmargin=0pt,itemindent=2em]
     \item 第 1 章：绪论。介绍研究背景及意义，梳理国内外研究现状，明确现有研究问题，并阐述本文的主要研究内容与创新点。
     \item 第 2 章：系统模型与定位理论基础。建立低成本无人机定位系统架构，分析复杂城市环境下的卫星信号传播机理，并介绍经典定位方法与本文所需的基础理论。
     \item 第 3 章：基于物理感知深度强化学习的单目标自适应融合定位方法。针对多源观测质量波动问题，提出 PA-DQN 融合框架，并进行实验验证与性能分析。
     \item 第 4 章：多目标协同定位方法。围绕多目标并发定位、Radio Map 信号成像以及节点掉点条件下的知识蒸馏鲁棒定位展开研究与实验分析。
     \item 第 5 章：结论与展望。总结全文研究工作，指出创新点与不足，并对未来研究方向进行展望。
-\end{itemize}
+\end{enumerate}
 
 为便于从整体上把握全文的逻辑关系，图~\ref{fig:thesis_structure_overview} 给出了本文的结构安排示意。
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth,trim=12 12 12 12,clip]{ch1/全文结构图.png}
+    \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,trim=12 12 12 12,clip]{ch1/全文结构图.png}}
     \caption{全文结构示意图}
     \label{fig:thesis_structure_overview}
 \end{figure}

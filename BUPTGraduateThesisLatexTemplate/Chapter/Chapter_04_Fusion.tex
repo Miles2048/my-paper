@@ -41,7 +41,95 @@
 \subsection{自适应加权融合定位模型}
 \label{subsec:3_1_3}
 
-为统一不同观测来源的输出形式，本文首先将各模块原始观测转换为对应的位置估计结果，再在位置层面进行加权融合。设在时刻 \(t\)，RSSI、AoA 和 PDR 模块分别给出位置估计 \(P_t^{\mathrm{RSSI}}\)、\(P_t^{\mathrm{AoA}}\) 和 \(P_t^{\mathrm{PDR}}\)，则最终融合结果可建模为
+为统一不同观测来源的输出形式，本文首先将各模块原始观测转换为对应的位置估计结果，再在位置层面进行加权融合。设目标终端在时刻 \(t\) 的位置为
+\begin{equation}
+\mathbf{p}_t=
+\left[
+x_t,\,
+y_t
+\right]^T,
+\label{eq:3_1_target_position}
+\end{equation}
+第 \(m\) 个无人机观测节点在同一时刻的位置为
+\begin{equation}
+\mathbf{s}_{m,t}=
+\left[
+x_{m,t},\,
+y_{m,t},\,
+z_{m,t}
+\right]^T,
+\label{eq:3_1_observation_node}
+\end{equation}
+则目标与该观测节点之间的几何距离可表示为
+\begin{equation}
+d_{m,t}
+=
+\sqrt{
+(x_t-x_{m,t})^2
++
+(y_t-y_{m,t})^2
++
+z_{m,t}^2
+}.
+\label{eq:3_1_geometry_distance}
+\end{equation}
+
+在复杂城市环境中，无人机接收到的目标相关观测会同时受到传播距离、遮挡状态、多径结构以及观测几何关系的影响。为便于统一描述，可将第 \(m\) 个观测节点在时刻 \(t\) 所获得的观测写为
+\begin{equation}
+z_{m,t}
+=
+h_m\!\left(\mathbf{p}_t,\mathbf{s}_{m,t};\boldsymbol{\xi}_t\right)
++
+v_{m,t},
+\label{eq:3_1_unified_observation}
+\end{equation}
+其中，\(h_m(\cdot)\) 表示由目标位置、观测节点位置及环境状态共同决定的观测映射关系，\(\boldsymbol{\xi}_t\) 表示传播环境相关参数，\(v_{m,t}\) 为测量噪声和未建模扰动。式~\eqref{eq:3_1_unified_observation} 表明，RSSI、AoA 和 PDR 三类观测虽然物理含义不同，但本质上都可看作目标状态在不同观测域中的映射结果。基于这一统一认识，本文进一步将三类观测分别组织为功率域、几何域和运动域三条定位分支，并由各分支输出可用于融合的位置估计。
+
+对于 RSSI 分支，接收信号强度满足带有环境附加偏差的对数距离路径损耗模型，可写为
+\begin{equation}
+r_{m,t}
+=
+P_0
+-
+10\eta\log_{10}\!\left(\frac{d_{m,t}}{d_0}\right)
++
+b_{m,t}^{\mathrm{NLOS}}
++
+v_{m,t}^{r},
+\label{eq:3_1_rssi_branch}
+\end{equation}
+其中，\(P_0\) 表示参考距离 \(d_0\) 处的接收功率，\(\eta\) 为路径损耗指数，\(b_{m,t}^{\mathrm{NLOS}}\) 表示遮挡和多径引起的附加偏差，\(v_{m,t}^{r}\) 为测量噪声。基于多个观测节点或多个机动观测位置的 RSSI 测量，可进一步通过路径损耗反演与几何约束求得 RSSI 分支的位置估计 \(P_t^{\mathrm{RSSI}}\)。
+
+对于 AoA 分支，目标相对于第 \(m\) 个观测节点的到达方位角可表示为
+\begin{equation}
+\theta_{m,t}^{\mathrm{AoA}}
+=
+\mathrm{atan2}(y_t-y_{m,t},\,x_t-x_{m,t})
++
+b_{m,t}^{\theta}
++
+v_{m,t}^{\theta},
+\label{eq:3_1_aoa_branch}
+\end{equation}
+其中，\(b_{m,t}^{\theta}\) 表示由 NLOS 偏移、阵列失配或反射路径主导带来的角度偏差，\(v_{m,t}^{\theta}\) 为角度测量噪声。通过多时刻或多观测位置的方位线交汇，可得到 AoA 分支的位置估计 \(P_t^{\mathrm{AoA}}\)。
+
+对于 PDR 分支，其作用并不是直接依赖无线传播观测，而是依据目标的短时运动连续性给出位置递推结果。若记步长估计为 \(\hat l_t\)、航向角估计为 \(\hat\psi_t\)，则 PDR 分支的递推关系可写为
+\begin{equation}
+P_t^{\mathrm{PDR}}
+=
+P_{t-1}^{\mathrm{PDR}}
++
+\left[
+\hat l_t\cos \hat\psi_t,\,
+\hat l_t\sin \hat\psi_t
+\right]^T
++
+\mathbf{w}_t,
+\label{eq:3_1_pdr_branch}
+\end{equation}
+其中，\(\mathbf{w}_t\) 为由惯性噪声和累计漂移引起的误差项。与 RSSI 和 AoA 相比，PDR 具有较好的短时连续性，但误差会随时间逐步积累，因此更适合作为连续轨迹约束和短时平滑分支。
+
+由此，在时刻 \(t\) 可获得三类初步位置估计 \(P_t^{\mathrm{RSSI}}\)、\(P_t^{\mathrm{AoA}}\) 和 \(P_t^{\mathrm{PDR}}\)。三者分别反映功率域、几何域和运动域的信息特征，既具有互补性，也会在复杂环境中表现出明显不同的可靠性变化规律。基于这一输入定义，最终融合结果可建模为
 \begin{equation}
 P_t^{\mathrm{Fused}}
 =
@@ -259,7 +347,7 @@ s_t=
 \subsection{动作空间设计}
 \label{subsec:3_3_2}
 
-在 RL-IFA 基线算法中，动作空间的作用是根据当前状态对多源观测的融合权重进行更新。由于本文采用 Q-Learning 进行求解，为保证动作集合有限且便于训练实现，本文对权重调整过程进行离散化处理。具体而言，动作并不直接给出新的连续权重值，而是规定在当前时刻对各观测源权重执行“增加”“减小”或“保持不变”三类基本操作。通过这种方式，多源融合权重优化问题可被转化为有限动作空间下的离散决策问题。
+在 RL-IFA 基线算法中，动作空间的作用是根据当前状态对多源观测的融合权重进行更新。由于本文采用 Q-Learning 进行求解，为保证动作集合有限且便于训练实现，本文对权重调整过程进行离散化处理。具体而言，动作并不直接给出新的连续权重值，而是规定在当前时刻对各观测源权重执行增加减小或保持不变三类基本操作。通过这种方式，多源融合权重优化问题可被转化为有限动作空间下的离散决策问题。
 
 考虑到三类观测的融合权重满足归一化约束
 \begin{equation}
@@ -609,6 +697,16 @@ Q(\mathbf{S}_t,a_{|\mathcal{A}|};\theta)
 \end{equation}
 
 从结构上看，PA-DQN 采用全连接前馈神经网络架构。网络目标值依据 Bellman 最优性原理计算：
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.86\textwidth]{ch3/DQN网络架构图.png}
+    \caption{PA-DQN 中 Q 网络的结构示意图}
+    \label{fig:ch3_pa_dqn_network}
+\end{figure}
+
+图~\ref{fig:ch3_pa_dqn_network} 给出了本文 PA-DQN 中 Q 网络的基本结构。该网络以前文构造的物理感知状态向量 \(\mathbf{S}_t\) 作为输入，经多层全连接映射提取状态表征后，输出动作空间中各候选权重调整动作对应的 Q 值估计。由此，智能体可根据网络输出选择当前时刻的最优调权动作，并与后续目标网络和经验回放机制共同完成稳定训练。
+
+\noindent 网络目标值依据 Bellman 最优性原理计算：
 \begin{equation}
 y_t
 =
@@ -724,7 +822,7 @@ y_t-Q(\mathbf{S}_t,a_t;\theta)
 
 在评价指标方面，本文采用均方根误差（RMSE）和 95\% 分位误差（P95）作为核心量化指标。RMSE 用于反映预测轨迹与真实轨迹之间的平均欧氏距离偏差，体现整体定位精度；P95 用于描述误差分布尾部特性，从而刻画偶发性大误差和定位跳变现象。除数值指标外，本文还通过轨迹可视化结果、信噪比（Signal-to-Noise Ratio, SNR）变化曲线以及消融对比表，对各算法的输出结果进行进一步分析。
 
-图~\ref{fig:ch3_training_convergence} 给出了 PA-DQN 在训练阶段的收敛过程示意，用于展示奖励值、训练损失或平均误差随训练轮数的变化趋势，从而说明网络训练过程的稳定性。
+图~\ref{fig:ch3_training_convergence} 给出了 PA-DQN 在训练阶段的收敛过程示意，用于展示奖励值、训练损失或平均误差随训练轮数的变化趋势。网络训练qu xiang稳定性。
 
 \begin{figure}[H]
     \centering
@@ -742,19 +840,65 @@ y_t-Q(\mathbf{S}_t,a_t;\theta)
 
 \begin{table}[htbp]
     \centering
-    \caption{不同算法在总体测试集上的性能对比}
+    \caption{总体测试集上的平均性能对比}
     \label{tab:ch3_overall_performance}
     \begin{tabular}{lccccc}
         \toprule
         \textbf{指标} & \textbf{PDR-only} & \textbf{AoA-only} & \textbf{EKF} & \textbf{RL-IFA} & \textbf{PA-DQN} \\
         \midrule
-        RMSE (m) & 12.83 & 15.21 & 7.34 & 5.91 & 2.15 \\
-        P95 (m) & 21.45 & 25.88 & 13.02 & 10.56 & 3.87 \\
+        RMSE (m) & 12.8347 & 15.2086 & 7.3364 & 5.9002 & 2.1468 \\
+        P95 (m) & 21.4479 & 25.8813 & 13.0217 & 10.5578 & 3.8724 \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 从相对提升幅度看，PA-DQN 相较 EKF 和 RL-IFA 的定位精度分别提升约 70.7\% 和 63.6\%。这一结果表明，在复杂城市环境中，仅依赖固定模型假设的传统融合方法或仅依赖后验误差反馈的强化学习方法，都难以充分适应传播条件和观测质量的动态变化；在状态空间中引入物理感知特征后，智能体能够更准确地识别当前环境状态并及时调整融合策略，从而在整体上获得更低的定位误差。
+
+为了进一步分析不同运动模式下的性能差异，本文分别统计矩形轨迹、线性轨迹以及随机游走轨迹场景下的定位结果。其中，线性轨迹场景将对角线与反对角线两类路径合并统计，因为二者均属于长距离直线穿越类型，且误差分布特征相近。分场景结果如表~\ref{tab:ch3_rectangle_performance}--表~\ref{tab:ch3_randomwalk_performance} 所示。
+
+\begin{table}[H]
+    \centering
+    \caption{矩形轨迹场景下不同算法性能对比}
+    \label{tab:ch3_rectangle_performance}
+    \begin{tabular}{lccccc}
+        \toprule
+        \textbf{指标} & \textbf{PDR-only} & \textbf{AoA-only} & \textbf{EKF} & \textbf{RL-IFA} & \textbf{PA-DQN} \\
+        \midrule
+        RMSE (m) & 13.7625 & 15.9624 & 7.9452 & 6.2148 & 2.2846 \\
+        P95 (m) & 22.6854 & 27.1168 & 13.8826 & 11.2064 & 4.0613 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{线性轨迹场景下不同算法性能对比}
+    \label{tab:ch3_linear_performance}
+    \begin{tabular}{lccccc}
+        \toprule
+        \textbf{指标} & \textbf{PDR-only} & \textbf{AoA-only} & \textbf{EKF} & \textbf{RL-IFA} & \textbf{PA-DQN} \\
+        \midrule
+        RMSE (m) & 11.4823 & 13.4418 & 6.2481 & 5.1026 & 1.8765 \\
+        P95 (m) & 19.2146 & 22.9547 & 11.2375 & 9.1147 & 3.4027 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{随机游走轨迹场景下不同算法性能对比}
+    \label{tab:ch3_randomwalk_performance}
+    \begin{tabular}{lccccc}
+        \toprule
+        \textbf{指标} & \textbf{PDR-only} & \textbf{AoA-only} & \textbf{EKF} & \textbf{RL-IFA} & \textbf{PA-DQN} \\
+        \midrule
+        RMSE (m) & 14.6117 & 17.9884 & 8.9042 & 7.1808 & 2.5496 \\
+        P95 (m) & 24.6770 & 30.4990 & 15.7292 & 12.7954 & 4.6229 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+从分场景结果可以看出，线性轨迹场景下各算法的绝对误差整体较低，这说明当运动方向较稳定、转向较少时，连续定位任务对轨迹保持的压力相对较小；矩形轨迹由于包含多次转角和边界切换，对局部连续性和权重调整稳定性提出了更高要求，因此误差整体高于线性轨迹；随机游走轨迹则同时具有方向变化频繁、局部曲率不规则以及传播条件切换更复杂等特点，因此成为三类场景中最具挑战性的测试条件。尽管不同场景的绝对误差水平存在差异，PA-DQN 在三类场景下均取得了最低的 RMSE 和 P95，说明其性能优势并不依赖于特定轨迹形态，而具有较稳定的跨场景适应能力。与此同时，RL-IFA 相较 EKF 在三类场景中都取得了一定改善，说明强化学习驱动的动态调权确实能够提升融合效果；但由于其状态构造仍主要依赖后验误差，面对转角、环境切换和不规则运动时仍难以及时响应，这也进一步说明引入物理感知先验的必要性。
 
 \subsection{典型轨迹结果分析}
 \label{subsec:3_6_3}
