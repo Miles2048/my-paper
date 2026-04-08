@@ -777,7 +777,7 @@ X_{i,j}=[x_i,y_i,z_i,R_{i,j}].
     \end{tabular}
 \end{table}
 
-由表~\ref{tab:ch4_overall_compare} 可见，Teacher 在完整观测条件下取得最低的 Mean Error、RMSE 和 90\% Error，体现了全量节点输入所带来的性能上界。Student-NoKD 的三项误差指标均显著增大，说明在掉点条件下仅依赖硬标签监督训练的学生模型难以恢复完整网络中的空间判别能力。Interp-Loc 在三项指标上均优于 Student-NoKD，表明对缺失观测进行插值补全确实具有一定作用，但其整体性能仍明显落后于 Student-KD。相比之下，Student-KD 的 Mean Error、RMSE 和 90\% Error 分别降至 12.8 m、16.0 m 和 26.4 m，较 Student-NoKD 分别下降 42.9\%、42.7\% 和 43.2\%，并显著逼近 Teacher，说明知识蒸馏能够有效迁移完整网络中学习到的全局空间结构知识。
+由表~\ref{tab:ch4_overall_compare} 可见，Teacher 在完整观测条件下取得最低的 Mean Error、RMSE 和 90\% Error，体现了全量节点输入所带来的性能上界。Student-NoKD 的三项误差指标均显著增大，说明在掉点条件下仅依赖硬标签监督训练的学生模型难以恢复完整网络中的空间判别能力。Interp-Loc 在三项指标上均优于 Student-NoKD，表明对缺失观测进行插值补全确实具有一定作用，但其整体性能仍明显落后于 Student-KD。相比之下，Student-KD 的 Mean Error、RMSE 和 90\% Error 分别降至 12.8 m、16.0 m 和 26.4 m，较 Student-NoKD 均取得了约 40\% 的误差下降，并显著逼近 Teacher，说明知识蒸馏能够有效迁移完整网络中学习到的全局空间结构知识。
 
 图~\ref{fig:ch4_error_bar} 给出了不同方法在 \(25\%\) 掉点条件下的 Mean Error 与 90\% Error 统计结果。结合图~\ref{fig:ch4_error_cdf} 与表~\ref{tab:ch4_overall_compare} 可以看出，Student-KD 不仅在平均误差上明显优于 Student-NoKD 和 Interp-Loc，而且在尾部大误差样本上也表现出更强的抑制能力。这说明蒸馏方法的作用并非仅体现在整体均值改善上，同时也提高了模型在复杂样本条件下的稳定性。
 
