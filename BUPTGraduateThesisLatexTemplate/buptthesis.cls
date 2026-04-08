@@ -719,54 +719,8 @@
 
 
 \def\makecommitteelist{%
-  \begin{center}
-    {\heiti \zihao{3} \BUPT@label@committeelist} \par
-  \end{center}
-
-  \ifBUPT@option@blind
-    \def\BUPT@value@committeeChairName{\@empty}
-    \def\BUPT@value@committeeChairTitle{\@empty}
-    \def\BUPT@value@committeeChairOrgan{\@empty}
-    \def\BUPT@value@committeeMemberFirstName{\@empty}
-    \def\BUPT@value@committeeMemberFirstTitle{\@empty}
-    \def\BUPT@value@committeeMemberFirstOrgan{\@empty}
-    \def\BUPT@value@committeeMemberSecondName{\@empty}
-    \def\BUPT@value@committeeMemberSecondTitle{\@empty}
-    \def\BUPT@value@committeeMemberSecondOrgan{\@empty}
-    \def\BUPT@value@committeeMemberThirdName{\@empty}
-    \def\BUPT@value@committeeMemberThirdTitle{\@empty}
-    \def\BUPT@value@committeeMemberThirdOrgan{\@empty}
-    \def\BUPT@value@committeeMemberFourthName{\@empty}
-    \def\BUPT@value@committeeMemberFourthTitle{\@empty}
-    \def\BUPT@value@committeeMemberFourthOrgan{\@empty}
-    \def\BUPT@value@committeeSecretaryName{\@empty}
-    \def\BUPT@value@committeeSecretaryTitle{\@empty}
-    \def\BUPT@value@committeeSecretaryOrgan{\@empty}
-  \fi
-
-  \begin{table*}[htbp]
-    \centering
-    \renewcommand\arraystretch{1.5}
-    \begin{tabular}{|>{\centering\arraybackslash}m{2cm} | >{\centering\arraybackslash}m{2cm} | >{\centering\arraybackslash}m{2cm} | >{\centering\arraybackslash}m{6.5cm}|}
-      \hline
-      职务   & 姓\quad 名                                                                                                          & 职\quad  称                              & 工\quad  作\quad  单\quad  位              \\
-      \hline
-      主席   & \BUPT@value@committeeChairName                                                                                    & \BUPT@value@committeeChairTitle        & \BUPT@value@committeeChairOrgan        \\
-      \hline
-      委员   & \BUPT@value@committeeMemberFirstName                                                                              & \BUPT@value@committeeMemberFirstTitle  & \BUPT@value@committeeMemberFirstOrgan  \\
-      \hline
-      委员   & \BUPT@value@committeeMemberSecondName                                                                             & \BUPT@value@committeeMemberSecondTitle & \BUPT@value@committeeMemberSecondOrgan \\
-      \hline
-      委员   & \BUPT@value@committeeMemberThirdName                                                                              & \BUPT@value@committeeMemberThirdTitle  & \BUPT@value@committeeMemberThirdOrgan  \\
-      \hline
-      委员   & \BUPT@value@committeeMemberFourthName                                                                             & \BUPT@value@committeeMemberFourthTitle & \BUPT@value@committeeMemberFourthOrgan \\
-      \hline
-      秘书   & \BUPT@value@committeeSecretaryName                                                                                & \BUPT@value@committeeSecretaryTitle    & \BUPT@value@committeeSecretaryOrgan    \\
-      \hline
-      答辩日期 & \multicolumn{3}{c|}{\BUPT@value@dissertationYear 年 \BUPT@value@dissertationMonth 月 \BUPT@value@dissertationDay 日}                                                                                   \\
-      \hline
-    \end{tabular}
-  \end{table*}
+  \thispagestyle{empty}%
+  \null
   \cleardoublepage
 }%
 
@@ -783,8 +737,6 @@
   \end{center}\par
   \vskip 5\p@
   {\zihao{-4} \BUPT@label@innovationparagraph}
-  \vskip 15\p@
-  \BUPT@label@authorsignature\BUPTunderline{100\p@}{}\hfil\BUPT@label@issuedate\BUPTunderline{100\p@}{}
   \vskip 55\p@
   \begin{center}
     {\heiti \zihao{3} \BUPT@label@authorizationtitle}
@@ -792,10 +744,6 @@
   \vskip 5\p@
   {\zihao{-4} \BUPT@label@authorizationparagraph}\par
   {\zihao{-4} \BUPT@label@authorizationcomment}
-  \vskip 15\p@
-  \BUPT@label@authorsignature\BUPTunderline{100\p@}{}\hfil\BUPT@label@issuedate\BUPTunderline{100\p@}{}
-  \vskip 15\p@
-  \BUPT@label@supervisorsignature\BUPTunderline{100\p@}{}\hfil\BUPT@label@issuedate\BUPTunderline{100\p@}{}
   \cleardoublepage
 }%
 
