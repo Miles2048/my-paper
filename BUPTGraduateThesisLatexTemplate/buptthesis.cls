@@ -324,11 +324,8 @@
 
 % Blind mode
 \ifBUPT@option@blind
-  \def\BUPT@value@degree{\BUPT@label@anonymousdegree}
-  \def\BUPT@value@degreeEN{\BUPT@label@anonymousdegreeEN}
-  \def\BUPT@value@degreemode{\BUPT@label@anonymousmode}
-  \def\BUPT@value@degreetype{\BUPT@label@anonymoustype}
-  \def\BUPT@value@degreemodeEN{\BUPT@label@anonymousmodeEN}
+  % Blind review should hide personal identifiers only; degree level and
+  % thesis type still need to remain visible on headers and title pages.
 \fi
 
 %% Training mode
