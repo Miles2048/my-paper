@@ -1,0 +1,644 @@
+\chapter{低成�无人�定位系统模型与定位理论基�}
+\label{ch:fundamentals}
+
+\section{系统任务�景与�体架构}
+\label{sec:2_1}
+
+\subsection{�合�低轨卫星终端定位任务描述}
+\label{subsec:2_1_1}
+
+复�环境下手�直连卫星�景中的���合�手�终端快�发现与准确定位，是无线电安全监管中的重要任务�随� 3GPP NTN�Direct-to-Smartphone 和 Direct-to-Cell ��发展，普�手�直接接入低轨卫星网�的可行�和工程形�已得到系统研究与实测验证\cite{Lin2021NTN,He2024DirectSmartphone,GarciaCabeza2025DirectToCell}�与传统��网�中的常规定位任务相比，该类手�终端排查主要�临三方�困难：其�，目标手��常不主动向外部监测系统提供同步信息�可信位置信息或协议辅助信息，因此�质上属于�合�式无源定位问题\cite{Torrieri1984PassiveLocation}；其二，目标手�多位于建筑密集区域或复�城市边缘�带，遮挡�反射�绕射与散射普遍存�，理想视��件难以长�成立；其三，目标可能呈现临时出现�短时工��动�移动甚至多手�并发辐射等复�形�，这对系统的�动响应能力�连续跟踪能力和抗虚警能力提出了更高要求\cite{Wymeersch2009CooperativeLocalization}�
+
+从任务目标上�，�文�研究的手�直连卫星终端排查并不�限于�单的信号�测，�是要求�复�城市环境中实现对目标手�空间位置的�效估计�若将离散时刻 $k$ �景中的目标手�集合表示为
+\begin{equation}
+\mathcal{X}_{k}
+=
+\left\{
+\mathbf{x}_{k,i}
+\right\}_{i=1}^{N_k},
+\quad
+\mathbf{x}_{k,i}
+=
+\left[
+x_{k,i},\,
+y_{k,i},\,
+\dot{x}_{k,i},\,
+\dot{y}_{k,i}
+\right]^T,
+\label{eq:2_1_target_state}
+\end{equation}
+其中，$N_k$ 表示时刻 $k$ �景中的目标手�数量，$\mathbf{x}_{k,i}$ 表示第 $i$ 个目标手�的状�向量，$x_{k,i}$ 与 $y_{k,i}$ 表示其二维位置�标，$\dot{x}_{k,i}$ 与 $\dot{y}_{k,i}$ 表示其�度分量，则�合�手�终端排查任务的�质可理解为：�目标手�数量�知�状��知�传播�件复�且观测受扰动影响的�件下，�托外部观测手段对 $\mathcal{X}_k$ 进行估计，并进�步实现对目标手�空间分布与运动状�的判定�
+
+为了对上述问题进行统�描述，可将无人�平台对目标手�的定位过程抽象为多目标观测集合模型
+\begin{equation}
+\mathcal{Z}_{k}
+=
+\left\{
+\mathbf{z}_{k,j}
+\right\}_{j=1}^{M_k},
+\quad
+\mathbf{z}_{k,j}
+=
+h(\mathbf{x}_{k,\pi(j)})+\mathbf{v}_{k,j},
+\label{eq:2_2_observation_model}
+\end{equation}
+其中，$\mathcal{Z}_k$ 表示第 $k$ 时刻接收到的观测集合，$M_k$ 表示对应时刻可获得的观测数量，$\mathbf{z}_{k,j}$ 表示第 $j$ 个观测向量，$\pi(j)$ 表示该观测�对应的目标手�索引，$h(\cdot)$ 表示由目标手�状�到观测空间的�线�映射关系，$\mathbf{v}_{k,j}$ 表示观测噪声及环境扰动项�式~\eqref{eq:2_2_observation_model} 表明，定位系统的输出精度不仅取决于目标手�状��身，还与传播环境�观测方式以及噪声水平密切相关�对于复�城市环境中的�合�手�终端排查��，映射函数 $h(\cdot)$ ��不再满足理想自由空间�件下的�单形式，�是受到多径传播��视�遮挡和�部信号衰落的共同影响\cite{Torrieri1984PassiveLocation,Wymeersch2009CooperativeLocalization}�
+
+\subsection{无人�定位系统�体架构}
+\label{subsec:2_1_2}
+
+�文�研究的低成�无人�定位系统�体架构如图~\ref{fig:ch2_uav_localization_scenario} �示�该系统由低轨卫星����合�手�终端�复�城市传播环境�无人��动观测平台以及后端定位处理链路共同构成�
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{figures/ch2/1_无人��动观测下�法终端定位�景示意图.jpg}
+    \caption{无人��动观测下的手�直连卫星�合�手�终端定位�景}
+    \label{fig:ch2_uav_localization_scenario}
+\end{figure}
+
+从�景关系上�，低轨卫星与��手�之间构成手�直连卫星业务链路，��手�终端则是无人�定位系统�关注的目标对象�手�相关信号�复�城市环境中传播时，会受到建筑遮挡�反射�绕射和散射等因素影响，从�形成�理想传播�件�无人��过多个�动观测位置对目标区域进行巡�接收，�步形成对目标手�的空间观测几何与时序观测链路�
+
+从信息流角度�，无人�平台�不同空间位置接收到目标相关信号后，系统进�步提取接收信号强度�到达方向�时间特征�轨迹�推信息以及后续方法中涉及的特征表示等观测信息�这些观测量或特征并不直接等同于�终位置，�是�为定位解算的输入，经由相应模型或学习算法进�步映射为目标位置估计结��也就是说，整个定位过程�质上是�个从空间信号观测到目标状�参数的映射过程�第三章将利用这类�动观测信息构建�向单目标连续定位的自�应融合框架，第四章则进�步将空间采样结�组织为 Radio Map，用于多目标并发定位中的信号成像与判别�
+
+为了对图~\ref{fig:ch2_uav_localization_scenario} �示过程进行统�描述，可将无人�定位系统抽象为离散时间状�空间模型
+\begin{equation}
+\mathbf{x}_{k}
+=
+f(\mathbf{x}_{k-1},\mathbf{u}_{k-1})+\mathbf{w}_{k-1},
+\label{eq:2_3_state_equation}
+\end{equation}
+\begin{equation}
+\mathbf{z}_{k}
+=
+h(\mathbf{x}_{k})+\mathbf{v}_{k},
+\label{eq:2_4_measurement_equation}
+\end{equation}
+其中，$\mathbf{u}_{k-1}$ 表示上�时刻对系统状�演化�影响的输入量，$f(\cdot)$ 为状�转移函数，$\mathbf{w}_{k-1}$ 为过程噪声；$\mathbf{z}_k$ 表示第 $k$ 时刻无人�获得的观测向量，$h(\cdot)$ 为观测映射函数，$\mathbf{v}_k$ 为观测噪声�式~\eqref{eq:2_3_state_equation}--式~\eqref{eq:2_4_measurement_equation} 给出了后续章节讨论定位问题的统�数学框架：目标手�状�随时间演化，�观测则由目标手�状�经过复�传播与测量过程映射得到��单目标连续定位�景下，$\mathbf{x}_k$ 可表示单个目标手�的位置或运动状�；�多目标�景下，该模型可进�步扩展为上�小节给出的目标集合状�描述��体��，�文�研究的低成�无人�定位系统，�质上是�个以无人��动观测为核心�以复�环境下信号感知为基��以目标手�位置估计为输出的动�定位系统，后续研究�要�此基�上进�步结合复�城市环境下的传播�理与观测误差�源展�分析�
+
+
+\section{低轨卫星信号模型}
+\label{sec:2_2}
+
+\subsection{多径效应�时延扩展与信号衰落�制}
+\label{subsec:2_2_1}
+
+�复�城市环境下，手�直连卫星终端相关信号从��手�传播至无人�接收端的过程中，�常不会仅沿单�直达路径传播，�是会受到建筑物立��街道边缘�玻璃幕墙以及�表散射体的共同影响，形成由直达径�反射径�绕射径和散射径叠加构成的复合传播过程�对于�合�手�终端排查任务��，这种传播�件的复�化将直接改变接收端�观测到的信号结构，使理想环境下基于�单几何关系建立的定位模型难以长�成立�因此，�建立后续定位方法之前，�必要先从传播层�对多径效应�时延扩展以及信号衰落�制进行统�分析\cite{TR38901,Guvenc2009TOASurvey}�
+
+从信号模型角度�，若接收端共接收到 $L$ ��效传播路径，则复基带接收信号可表示为
+\begin{equation}
+r(t)
+=
+\sum_{l=1}^{L}
+\alpha_l
+\,s(t-\tau_l)\,
+e^{-j2\pi f_c\tau_l}
++
+n(t),
+\label{eq:2_5_multipath_signal}
+\end{equation}
+其中，$s(t)$ 为发射信号，$\alpha_l$ 和 $\tau_l$ 分别表示第 $l$ �路径的复衰落系数和传播时延，$f_c$ 为载波频率，$n(t)$ 为加�噪声�式~\eqref{eq:2_5_multipath_signal} 表明，接收端实际观测到的信号是多�传播路径�幅度�相位和时延上的叠加结�，��理想自由空间�件下的单�路径传输结��
+
+�复�城市环境中，当无人�与目标手�之间存�视�链路时，接收信号中��同时包含直达径与若干�反射路径；�当建筑物遮挡导致直达路径被阻断时，系统只能接收到经墙�反射�边缘绕射或�部散射后到达的�视�分量�此时，接收端观测信号不仅信噪比下降，�且其主导路径的几何意义也会发生偏移�例如，�方向估计问题中，�强到达路径的方向可能不再指向�实目标；�功率测�问题中，接收功率也会偏离理想路径损�模型�对应的单调衰减关系�由此可见，多径效应带�的影响并不�限于噪声增强，�是会从根�上改变观测量与�实位置之间的映射关系�
+
+为了更紧凑�描述多径传播结构，�常可引入信道冲�响应表示�对于时变城市传播环境，等效信道可写为
+\begin{equation}
+h(t,\tau)
+=
+\sum_{l=1}^{L}
+\alpha_l(t)
+e^{-j\phi_l(t)}
+\delta\big(\tau-\tau_l(t)\big),
+\label{eq:2_6_time_varying_cir}
+\end{equation}
+其中，$\alpha_l(t)$�$\phi_l(t)$ 和 $\tau_l(t)$ 分别表示第 $l$ �路径�时刻 $t$ 的幅度�相位和传播时延�式~\eqref{eq:2_6_time_varying_cir} 说明，复�城市环境中的信道�质上是由若干�随时间变化的多径分量共同构成的�对于无人�平台��，由于平台自身处于运动状�，接收端的相对观测几何会随航迹不断变化，因此多径结构不仅受环境决定，也会随无人�位置变化�动�演化�
+
+�多径环境下，不同路径具�不同到达时延，从�导致接收信号能量�时域上被拉宽�为了度量这�离散程度，�常定义平�时延和�方根时延扩展�设第 $l$ �路径的平�功率为 $P_l$，则平�时延可表示为
+\begin{equation}
+\bar{\tau}
+=
+\frac{\sum_{l} P_l \tau_l}{\sum_{l} P_l},
+\label{eq:2_7_mean_delay}
+\end{equation}
+对应的�方根时延扩展为
+\begin{equation}
+\sigma_{\tau}
+=
+\sqrt{
+\frac{\sum_{l} P_l(\tau_l-\bar{\tau})^2}{\sum_{l} P_l}
+},
+\label{eq:2_8_rms_delay_spread}
+\end{equation}
+其中，$\sigma_{\tau}$ 越大，表明信号能量�时域上的分散程度越高，接收端越难稳定区分主导路径与附加路径�对于定位任务��，时延扩展的增大�常意味�传播环境更复�，路径重叠更严重，观测结�更容易受到多径干扰�
+
+�要指出的是，�方根时延扩展不仅是传统无线传播分析中的重要参数，��文后续方法中也具�直接�用��第三章中，$\sigma_{\tau}$ 将被�为表征传播复�度的重要物理感知特征，用于强化学习智能体的状�构�；�第四章中，由多径引起的时域离散和空间叠加效应，又会进�步表现为空间热力图中的�部高亮扩散�纹理模糊和伪热点增强�因此，从论文整体�辑��，时延扩展不仅是�个信道统计量，也是连接传播�理与后续智能定位方法的重要桥梁�
+
+除时域离散外，多径传播还会引起显著的功率衰落与信号起伏�若仅从大尺度传播角度�察，接收功率常采用对数�离模型描述：
+\begin{equation}
+P_r(d)
+=
+P_t
+-
+PL(d_0)
+-
+10n\log_{10}\frac{d}{d_0}
++
+X_{\sigma},
+\label{eq:2_9_log_distance_model}
+\end{equation}
+其中，$P_t$ 为发射功率，$PL(d_0)$ 为参��离 $d_0$ 处的路径损�，$n$ 为路径损�指数，$X_{\sigma}$ 为阴影衰落项�式~\eqref{eq:2_9_log_distance_model} 表明，即使�相同几何�离�件下，接收功率也会因环境遮挡�建筑分布和�部传播�件差异�出现明显波动��城市峡谷环境中，这种波动�常表现得更为剧烈，从�使 RSSI 与传播�离之间的对应关系明显弱化\cite{TR38901}�
+
+
+\subsection{手�直连卫星�景下的外部观测信号模型}
+\label{subsec:2_2_2}
+
+�文关注的定位对象是手�直连卫星�景下位于��的手�终端，�不是卫星侧链路信号�身�对无人�外部监测系统��，目标手�可被视为�个不提供可信位置和同步辅助的�合�辐射源��虑到不同手�直连卫星系统�空口体制�频段配置和调度方式上可能存�差异，�文不对具体�信协议进行�向建模，�是从外部观测角度建立与定位特征相关的等效接收信号模型�设��手�发射的等效基带信号为 $s_u(t)$，则第 $i$ 个无人�观测位置接收到的复基带信号可表示为
+\begin{equation}
+r_i(t)
+=
+\sum_{l=1}^{L}
+\alpha_l(t)
+s_u\big(t-\tau_l(t)\big)
+e^{j2\pi \nu_l(t)t}
++
+n_i(t),
+\label{eq:2_10_phone_received_signal}
+\end{equation}
+其中，$L$ 表示�效传播路径数，$\alpha_l(t)$�$\tau_l(t)$ 和 $\nu_l(t)$ 分别表示第 $l$ �路径的复衰落系数�传播时延和多普勒频移，$n_i(t)$ 表示第 $i$ 个观测位置的接收噪声�式~\eqref{eq:2_10_phone_received_signal} 表明，无人�接收到的目标手�信号同时包含手�发射波形�复�城市多径传播�平台相对运动和接收噪声等因素�对于后续定位��，系统并不要求完全恢复手��信协议，�是从该接收信号中提取 RSSI�AoA�TOA/TDOA 相关量以及 RMS 时延扩展等可用于定位和状�感知的观测特征�
+
+近年�，Direct-to-Smartphone�Direct-to-Cell 以及 3GPP NTN 相关研究表明，普�手�直接接入低轨卫星网�正�成为可部署的�信形�\cite{Lin2021NTN,He2024DirectSmartphone,GarciaCabeza2025DirectToCell}；同时，LEO 定位和直接到终端�信定位�体化研究也说明，卫星网�可为终端定位提供新的几何与信号�件\cite{Dureppagari2025LEOPositioning,DeGaudenzi2026D2DPartI,DeGaudenzi2026D2DPartII}�但��文的监管排查�景中，目标手�不主动参与定位，不提供可信 GNSS �标和同步辅助，因此不能�单假设系统能够获得网�侧完整定位量�基于这�约�，后续章节主要研究如何利用无人�外部观测形成稳健的位置估计与自�应融合决策�
+
+\section{经典定位方法}
+\label{sec:2_3}
+
+�前文中，�文已经对手�直连卫星�景下的�合�手�终端排查任务�系统�体架构以及信号传播模型进行了分析�可以�到，信号�从��手�发�至无人�的过程中，会受到多径叠加�阴影衰落和�视�遮挡的共同影响，这些因素直接决定了接收端�获取观测量的质量�为了建立后续智能定位算法的基�，�节首先对 RSSI�AoA�TOA�TDOA 和 PDR 等经典定位方法的基�模型进行�结\cite{Torrieri1984PassiveLocation,Wymeersch2009CooperativeLocalization}�
+
+\subsection{RSSI 定位}
+\label{subsec:2_3_1}
+
+接收信号强度指示（Received Signal Strength Indicator, RSSI）定位是�类基于信号功率衰减特�的经典定位方法，其基��想是利用接收端测得的信号强度与传播�离之间的统计关系，反推出目标与观测平台之间的相对�离，再结合多个观测位置的几何关系实现目标位置估计�由于 RSSI 可直接由接收信号获取，对�外同步�制和复�阵列结构的�赖较弱，因此该方法�低成�定位�景中具�实现�单�部署方便和计算��较低等优点�
+
+�理想自由空间�件下，信号功率随传播�离增大��渐衰减，其基�规律可由路径损�模型描述�若采用对数�离路径损�模型，则�离 $d$ 处的接收功率可写为
+\begin{equation}
+P_r(d)
+=
+P_t
+-
+PL(d_0)
+-
+10n\log_{10}\frac{d}{d_0}
++
+X_{\sigma},
+\label{eq:2_15_rssi_pathloss_model}
+\end{equation}
+其中，$P_t$ 为发射功率，$PL(d_0)$ 为参��离 $d_0$ 处的路径损�，$n$ 为路径损�指数，$X_{\sigma}$ 为阴影衰落项�若暂不�虑随�扰动项，则可以根据接收功率反推出目标到观测点之间的�离估计�
+\begin{equation}
+\hat d
+=
+d_0
+\cdot
+10^{\frac{P_t-PL(d_0)-P_r(d)}{10n}}.
+\label{eq:2_16_rssi_distance_estimation}
+\end{equation}
+式~\eqref{eq:2_16_rssi_distance_estimation} 给出了 RSSI 测�的基�形式�对于单个观测点��，$\hat d$ 对应的是�个以观测点为�心�以估计�离为半径的等��；当无人�平台�多个空间位置获得 RSSI 观测时，即可形成多个�离约�，并�过几何交会估计目标位置�若第 $i$ 个观测位置�标为 $(x_i,y_i)$，目标位置为 $(x,y)$，则对应的几何关系可写为
+\begin{equation}
+\sqrt{(x-x_i)^2+(y-y_i)^2}
+=
+\hat d_i,
+\qquad i=1,2,\dots,M,
+\label{eq:2_17_rssi_geometry_constraint}
+\end{equation}
+其中，$M$ 为�效观测位置数，$\hat d_i$ 为第 $i$ 个观测位置对应的 RSSI 测�结��当 $M\geq 3$ 时，理论上可�过�小二乘等方式求解目标位置�
+
+
+\subsection{AoA 定位}
+\label{subsec:2_3_2}
+
+到达角（Angle of Arrival, AoA）定位是�类基于信号空间传播方向的经典定位方法�其基�原理是利用具�方向�感知能力的接收天线阵列，�过测量入射信号�阵列上的相位差或功率分布，估计信号相对于观测平台的到达方位角，并根据测量出的方位线与多个观测位置的几何关系实现对目标的定位�
+
+设目标���二维平�上的�标为 $\mathbf{x} = [x, y]^T$，第 $i$ 次观测时无人�的空间位置�标为 $(x_i, y_i)$，则其观测到的目标方位角 $\theta_i$ 与目标位置之间的几何关系为
+\begin{equation}
+\theta_i
+=
+\mathrm{atan2}(y-y_i,\,x-x_i)
++
+\epsilon_{\theta,i},
+\label{eq:2_18_aoa_observation_model}
+\end{equation}
+其中，$\epsilon_{\theta,i}$ 为角度测量噪声�式~\eqref{eq:2_18_aoa_observation_model} 表明，�次 AoA 观测可以�空间中确定��以观测点为起点�指向目标方向的方位射线�当无人��多个不同位置�展�动观测时，可以形成多�方位射线的交会，从�确定目标位置�
+
+图~\ref{fig:ch2_aoa_localization} 展示了 AoA 定位的几何原理�该图突出了无人��不同航迹点获取方位射线，并由射线交点反推目标位置的过程�
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{figures/ch2/AOA.jpg}
+    \caption{AoA 定位几何约�}
+    \label{fig:ch2_aoa_localization}
+\end{figure}
+
+\subsection{TOA 定位}
+\label{subsec:2_3_3}
+
+TOA（Time of Arrival）定位方法�过测量信号从发射端传播到接收端的�对到达时间实现对传播�离的估计�设第 $i$ 个接收�测得传播时延为 $t_i$，则�离满足 $\hat{d}_i=ct_i$�其几何约�为：
+\begin{equation}
+\sqrt{(x-x_i)^2+(y-y_i)^2}=ct_i,
+\label{eq:2_19_toa_circle}
+\end{equation}
+这意味�每个 TOA 观测对应��以接收�为�心的等���图~\ref{fig:ch2_toa_localization} 展示了 TOA 定位的测�几何关系�TOA �理想�件下具�清晰的�离物理意义，且理论定位精度较高，但其前提是系统能够获得高精度�对时间同步�对于�文�研究的�合�手�直连卫星终端定位�景��，目标手�发射时刻不可控，且复�城市环境中的多径和�视�传播会进�步扰动时延测量结�，因此 TOA 更�合�为理论参照或基�观测模型，�难以直接�为�文的主定位路线\cite{Guvenc2009TOASurvey,Qin2025Timing}�
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{figures/ch2/TOA.jpg}
+    \caption{TOA 定位几何约�}
+    \label{fig:ch2_toa_localization}
+\end{figure}
+
+\subsection{TDOA 定位}
+\label{subsec:2_3_4}
+
+TDOA（Time Difference of Arrival）定位方法�过不同接收�之间的到达时间差消除�知发射时刻的影响�设目标到第 $i$ 个接收�和参�接收� 1 的传播�离分别为 $d_i$ 和 $d_1$，则�：
+\begin{equation}
+\sqrt{(x-x_i)^2+(y-y_i)^2}-\sqrt{(x-x_1)^2+(y-y_1)^2}=c\Delta t_{i,1},
+\label{eq:tdoa_hyperbola}
+\end{equation}
+式~\eqref{eq:tdoa_hyperbola} 对应��双曲线，因此 TDOA 的定位�质是利用多�双曲线的交会确定目标位置�图~\ref{fig:ch2_tdoa_localization} 描绘了基于双曲线交会的 TDOA 定位原理�相较于 TOA，TDOA 不�要知道目标的�对发射时刻，因此��合�定位中具�更强的工程实用��然�，TDOA 仍�赖多接收节点之间的严格时间同步以及较稳定的传播�件；�低成�无人�平台与复�城市环境共同约�下，这类�件��难以长�满足�因此，TDOA ��文中更�合�为经典对比方法与理论分析基�，�不是后续方法设计的主要��路线\cite{Chan1994Hyperbolic,Guvenc2009TOASurvey,Torrieri1984PassiveLocation}�
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{figures/ch2/TDOA.jpg}
+    \caption{TDOA 定位几何约�}
+    \label{fig:ch2_tdoa_localization}
+\end{figure}
+
+\subsection{PDR 定位}
+\label{subsec:2_3_5}
+
+位置�推（Pedestrian Dead Reckoning, PDR）是�种利用先验运动学模型，�过积分或离散累加前�时刻的位置�推算当前位置的手段��离散时间二维空间中，PDR 定位模型的标准状�更新公式可表示为：
+\begin{equation}
+\begin{bmatrix} x_k \\ y_k \end{bmatrix} = \begin{bmatrix} x_{k-1} \\ y_{k-1} \end{bmatrix} + \Delta d_k \begin{bmatrix} \cos \theta_k \\ \sin \theta_k \end{bmatrix} + \mathbf{w}_k,
+\label{eq:2_21_pdr_update}
+\end{equation}
+其中，$(x_k, y_k)^T$ 表示目标� $k$ 时刻的二维�标，$\Delta d_k$ 为步长，$\theta_k$ 为运动航向角，$\mathbf{w}_k$ 为过程噪声�图~\ref{fig:ch2_pdr_localization} 给出了 PDR 运动�推的基��辑示意�PDR 方法的优势�于其完全自主，不受城市峡谷中多径和信号衰落的影响，但其缺陷�于误差会随时间累积产生偏移（Drift Error）�
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{figures/ch2/PDR.jpg}
+    \caption{PDR 定位运动�推过程}
+    \label{fig:ch2_pdr_localization}
+\end{figure}
+
+为更直观�说明上述经典方法�工程应用中的�用边界，表~\ref{tab:ch2_classical_localization_compare} 对 RSSI�AoA�TOA�TDOA 和 PDR 的核心观测量��用�景与固�缺陷进行了对比�可以�出，不同方法��赖的物理观测和系统�件并不相同，因��低成�无人�平台与复�城市环境中呈现出互补��
+
+\begin{table}[htbp]
+    \centering
+    \caption{经典定位方法对比}
+    \label{tab:ch2_classical_localization_compare}
+    \small
+    \renewcommand{\arraystretch}{1.22}
+    \begin{tabular}{p{0.11\textwidth}p{0.24\textwidth}p{0.28\textwidth}p{0.28\textwidth}}
+        \toprule
+        \textbf{方法} & \textbf{核心观测与几何约�} & \textbf{�用�景} & \textbf{�限�} \\
+        \midrule
+        RSSI & 接收功率与传播�离关系；形成等��约� & 低成��低复�度�难以获得严格同步或阵列角度信息的�景 & 对路径损�模型�发射功率和环境遮挡敏感；多径和阴影衰落会削弱功率与�离的单调关系 \\
+        AoA & 信号到达方向；形成方位射线约� & 具备天线阵列或方向估计能力�观测几何较好的�动平台定位�景 & �赖阵列孔径和角度估计精度；NLOS �件下�强到达方向可能偏离�实目标方向 \\
+        TOA & �对到达时间；形成等��约� & 发射端与接收端可实现高精度时间同步�信号带宽较高的测�定位�景 & �要已知发射时刻或严格�对同步；�合�目标和多径环境下时延测量易产生偏差 \\
+        TDOA & 多接收节点到达时间差；形成双曲线约� & 目标发射时刻�知但接收节点间可同步的�合�定位�景 & �赖多接收节点间严格同步和良好几何分布；城市 NLOS 会导致双曲约�偏移 \\
+        PDR & 上�时刻位置�运动步长与航向；形成轨迹�推约� & 短时连续跟踪�无线观测短暂�化或遮挡严重的辅助定位�景 & 误差随时间累积，存�漂移问题；�要周��外部观测校正 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+由表~\ref{tab:ch2_classical_localization_compare} 可知，RSSI 实现�单但环境敏感，AoA 具�明确方向约�但�赖阵列与视��件，TOA 和 TDOA 理论精度较高但同步要求严格，PDR 自主�强但误差会随时间累积�因此，��文�向的�合�手�直连卫星终端排查�景中，单�经典定位方法难以�复�传播�低成�平台和连续观测�化�件下长��持稳定�能�后续章节引入多源融合与自�应决策，正是为了利用不同观测量之间的互补�，并根据当前环境状�动�调整其贡献�
+
+\section{�向定位的智能决策与知识迁移基�}
+\label{sec:2_4}
+
+前文已对低轨卫星信号模型以及 RSSI�AoA�TOA�TDOA 和 PDR 等经典定位方法进行了分析��低成�无人�平台与复�传播环境的共同约�下，定位系统进�步�临两类关键问题：对于单目标连续定位，观测可��和环境状�随时间变化，�要�据当前定位状�动�调整融合策略；对于多无人�协同定位，节点掉点和观测残缺会削弱空间判别能力，�要将完整观测�件下获得的定位知识迁移至不完整观测�景�
+
+基于上述�虑，�节介绍与后续方法直接相关的两类理论基�：�向动�定位决策的马尔可夫决策过程与 DQN 强化学习基�，以及�向残缺观测鲁棒定位的知识蒸馏基��其中，前两部分主要�务于第三章中的单目标自�应融合定位建模，后�部分主要�务于第四章中的多目标协同鲁棒定位建模�
+
+\subsection{马尔可夫决策过程}
+\label{subsec:2_4_1}
+
+�动�环境中，定位并�彼此独立的单次估计过程，�是�要随目标状��观测质量和环境�件的变化持续更新策略�特别是�第三章�研究的单目标连续融合定位问题中，系统��据当前观测特征和历史定位结�动�调整不同观测分支的融合�重�该决策不仅影响当前时刻的定位误差，也会影响后续时刻的轨迹连续�与误差传播，因此具�典型的序列决策特征�
+
+马尔可夫决策过程（Markov Decision Process, MDP）为这类动�定位问题提供了统�建模框架��向定位任务的 MDP 可表示为五元组
+\begin{equation}
+\mathcal{M}_{\mathrm{loc}}
+=
+\langle
+\mathcal{S}_{\mathrm{loc}},
+\mathcal{A}_{\mathrm{loc}},
+\mathcal{P}_{\mathrm{loc}},
+\mathcal{R}_{\mathrm{loc}},
+\gamma
+\rangle,
+\label{eq:2_25_mdp_tuple}
+\end{equation}
+其中，$\mathcal{S}_{\mathrm{loc}}$ 表示定位状�空间，$\mathcal{A}_{\mathrm{loc}}$ 表示定位动�空间，$\mathcal{P}_{\mathrm{loc}}$ 表示状�转移概率，$\mathcal{R}_{\mathrm{loc}}$ 表示定位奖励函数，$\gamma\in[0,1]$ 为折扣因子�对于任意时刻 $t$，智能体观测当前定位状� $s_t\in\mathcal{S}_{\mathrm{loc}}$，�择动� $a_t\in\mathcal{A}_{\mathrm{loc}}$，动�执行后获得即时奖励 $r_t$，并转移到下�状� $s_{t+1}$���文中，该序列决策框架构成第三章 DQN 融合决策模型的理论前提\cite{Mnih2015DQN}�
+
+对于单目标连续定位问题，定位状�可进�步表示为
+\begin{equation}
+s_t
+=
+\left[
+\mathbf{z}_t,\,
+\mathbf{c}_t,\,
+\hat{\mathbf{p}}_{t-1}
+\right],
+\label{eq:2_26_loc_state}
+\end{equation}
+其中，$\mathbf{z}_t$ 表示当前时刻的观测特征向量，$\mathbf{c}_t$ 表示传播复�度与观测质量相关特征，$\hat{\mathbf{p}}_{t-1}$ 表示上�时刻的位置估计结��相应�，动� $a_t$ 可理解为对融合�重或定位策略的调节，奖励则用于衡量当前决策�定位精度�轨迹连续�与鲁棒�上的综合效��例如，定位奖励可写为
+\begin{equation}
+r_t
+=
+-\left\|
+\hat{\mathbf{p}}_t-\mathbf{p}_t^{\mathrm{gt}}
+\right\|_2
+-\lambda
+\left\|
+\hat{\mathbf{p}}_t-\hat{\mathbf{p}}_{t-1}
+\right\|_2,
+\label{eq:2_26_loc_reward}
+\end{equation}
+其中，$\mathbf{p}_t^{\mathrm{gt}}$ 表示�实位置，$\lambda$ 为平衡定位精度与轨迹平滑�的�重系数�若下�状�主要由当前状�和当前动�决定，�与更早历史无直接关系，则可近似视为满足马尔可夫�质，即
+\begin{equation}
+P(s_{t+1}\mid s_t,a_t,s_{t-1},a_{t-1},\dots)
+=
+P(s_{t+1}\mid s_t,a_t).
+\label{eq:2_26_markov_property}
+\end{equation}
+
+� MDP 框架下，智能体的目标并不是追求单步奖励�大，�是寻求长�累计回报�大�设策略 $\pi$ 表示状�到动�的映射，则对应的状恔动�价�函数可写为
+\begin{equation}
+Q^{\pi}(s,a)
+=
+\mathbb{E}_{\pi}
+\left[
+\sum_{k=0}^{\infty}\gamma^k r_{t+k}
+\;\middle|\;
+s_t=s,\; a_t=a
+\right].
+\label{eq:2_27_q_function}
+\end{equation}
+式~\eqref{eq:2_27_q_function} 表明，动�优劣不仅取决于即时收益，还取决于其对后续状�演化和长�定位效�的影响�这与复�环境下的连续定位过程�致，因为某�时刻的错误决策��会进�步放大后续误差�
+
+进�步�，�据 Bellman �优�原理，�优状恔动�价�函数满足
+\begin{equation}
+Q^*(s,a)
+=
+\mathbb{E}
+\left[
+r_t+\gamma \max_{a'}Q^*(s',a')
+\;\middle|\;
+s,a
+\right],
+\label{eq:2_28_bellman_optimality}
+\end{equation}
+其中，$s'$ 表示执行动� $a$ 后系统到达的下�状��该式构成后续强化学习求解的理论基��
+
+图~\ref{fig:ch2_mdp_framework} 给出了�文定位问题中的 MDP 建模示意图，展示了状�观测�动�执行与奖励反馈之间的闭环交互过程�该框架为第三章中基于物理感知的多源异构信息自�应融合定位提供了方法学支撑�
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.80\textwidth]{figures/ch2/MDP.jpg}
+    \caption{定位问题中的马尔可夫决策过程建模}
+    \label{fig:ch2_mdp_framework}
+\end{figure}
+
+综上，马尔可夫决策过程为复�环境下的动�定位问题提供了统�描述方式��过将定位状�感知�策略�择与奖励反馈纳入同�闭环框架，MDP 为后续第三章中基于强化学习的多源异构融合定位方法奠定了理论基����文中，MDP 并�抽象的�用决策模型，�是对单目标连续定位中状�感知---�重调整---位置更新闭环过程的形式化描述�
+
+\subsection{DQN 强化学习基�}
+\label{subsec:2_4_2}
+
+�马尔可夫决策过程框架下，若定位状�空间和动�空间�较小，可采用表格式方法直接存储和更新状恔动�价�函数�然�，对于复�环境下的定位问题，系统状��常由传播复�度�观测波动��几何�致�以及历史定位结�等信息共同构成，具�连续和高维特征�若仍采用表格式方法，不仅难以�效覆盖状�空间，还会带�明显的维数灾难�基于这�现实约�，深度 Q 网�（Deep Q-Network, DQN）被引入用于�近定位状恔动�价�函数�
+
+DQN 的核心�想是利用参数为 $\theta$ 的神经网�近似�优状恔动�价�函数，即
+\begin{equation}
+Q(s,a;\theta)\approx Q^*(s,a).
+\label{eq:2_29_dqn_approx}
+\end{equation}
+对于给定定位状� $s_t$，网�输出��可�动�对应的 Q �估计，智能体据此�择�优动��由此，传统 Q-learning 中�赖显式 Q 表的更新方式被替换为对神经网�参数的迭代优化\cite{Mnih2015DQN}�对应的定位决策动�可表示为
+\begin{equation}
+a_t
+=
+\arg\max_{a\in\mathcal{A}_{\mathrm{loc}}}
+Q(s_t,a;\theta),
+\label{eq:2_29_loc_action}
+\end{equation}
+�多源融合定位�景中，动� $a_t$ 进�步决定各观测分支的融合�重，从�得到融合位置估计
+\begin{equation}
+\hat{\mathbf{p}}_t^{\mathrm{fus}}
+=
+\sum_{m=1}^{M}
+\omega_t^{(m)}(a_t)\,
+\hat{\mathbf{p}}_t^{(m)},
+\label{eq:2_29_fused_position}
+\end{equation}
+其中，$\hat{\mathbf{p}}_t^{(m)}$ 表示第 $m$ 个观测分支�时刻 $t$ 输出的位置估计，$\omega_t^{(m)}(a_t)$ 表示由动� $a_t$ 决定的融合�重�由此，DQN ��文中的�用可概括为学习从高维定位状�到融合决策动�的映射关系�
+
+�据 Bellman �优�原理，DQN 中的目标�可定义为
+\begin{equation}
+y_t
+=
+r_t+\gamma \max_{a'}Q(s_{t+1},a';\theta^-),
+\label{eq:2_30_dqn_target}
+\end{equation}
+其中，$\theta^-$ 表示目标网�参数�进�，当前网�的损失函数可写为
+\begin{equation}
+L(\theta)
+=
+\mathbb{E}_{(s_t,a_t,r_t,s_{t+1})\sim\mathcal{D}}
+\left[
+\left(
+y_t-Q(s_t,a_t;\theta)
+\right)^2
+\right],
+\label{eq:2_31_dqn_loss}
+\end{equation}
+其中，$\mathcal{D}$ 表示经验回放池中的定位转移样�分布��过�小化式~\eqref{eq:2_31_dqn_loss}，可不断调整网�参数，使其�近�优 Q 函数�
+
+�实际训练过程中，DQN �常包含两项关键稳定�制�其�是经验回放（Experience Replay），即将智能体交互过程中获得的样� $(s_t,a_t,r_t,s_{t+1})$ 存入经验池，再随�采样构成训练批次，以降低时间序列样�之间的相关�；其二是目标网�（Target Network），即使用更新较慢的网� $\theta^-$ 生成目标� $y_t$，以减弱训练目标随当前网�快�波动�带�的不稳定��这两项�制使 DQN 能够�复�状�空间中�持相对稳定的学习过程\cite{Mnih2015DQN}�
+
+DQN 相较于传统表格式 Q-learning 具�两方�优势�其�，它能够处理连续或高维定位状�输入，从��应复�环境下由多种物理特征与历史信息共同构成的状�描述；其二，神经网�的�线�映射能力使其能够从复�状�中学习定位决策动�价�的近似表达，�无�对状�进行过度离散化�这�点对于�文第三章中的物理感知融合定位尤为关键�
+
+综上，DQN ��留强化学习长�决策优势的基�上，利用深度神经网�实现了对高维定位状�空间中价�函数的�效�近�对于�文第三章�研究的动�融合定位问题，DQN 提供了将复�环境感知状�直接映射为融合决策动�的可行工具�具体到�文�景中，DQN �承担的核心角色并��般动��择器，�是�向复�环境下多源观测融合�重动�调整的定位决策器�
+
+\subsection{知识蒸馏基�}
+\label{subsec:2_4_3}
+
+除�向序列决策的强化学习方法外，�文第四章还涉及另�类重要的学习�制，即知识蒸馏（Knowledge Distillation）��多无人�协同定位�景中，随�掉点�节点失效和观测残缺会导致输入信息不完整，从�削弱模型对目标空间位置的判别能力�知识蒸馏的基��想是利用�能更强�输入信息更完整或训练更充分的教师模型，将其学习到的定位判别知识迁移给学生模型，使后��观测残缺�件下仍能够�近教师模型的�能�
+
+��文�景下，教师模型�常对应完整观测�件下的定位网�，学生模型则对应掉点或残缺观测�件下的定位网��若分别记完整观测输入和残缺观测输入为 $\mathbf{X}^{\mathrm{full}}$ 与 $\mathbf{X}^{\mathrm{drop}}$，则二�的输出 logits 可表示为
+\begin{equation}
+\mathbf{z}^{T}=f_T(\mathbf{X}^{\mathrm{full}}),
+\qquad
+\mathbf{z}^{S}=f_S(\mathbf{X}^{\mathrm{drop}}),
+\label{eq:2_32_kd_input}
+\end{equation}
+其中，$f_T(\cdot)$ 和 $f_S(\cdot)$ 分别表示教师网�和学生网���教师�学生框架下，设教师网�输出 logits 向量为 $\mathbf{z}^{T}$，学生网�输出 logits 向量为 $\mathbf{z}^{S}$，则�温度系数 $T_d$ �用下，教师网�的软标签分布可表示为
+\begin{equation}
+q^{T}_{m}
+=
+\frac{\exp(z^{T}_{m}/T_d)}
+{\sum_{n}\exp(z^{T}_{n}/T_d)},
+\label{eq:2_32_teacher_soft}
+\end{equation}
+学生网�对应的软化输出为
+\begin{equation}
+q^{S}_{m}
+=
+\frac{\exp(z^{S}_{m}/T_d)}
+{\sum_{n}\exp(z^{S}_{n}/T_d)}.
+\label{eq:2_33_student_soft}
+\end{equation}
+其中，$m$ 表示第 $m$ 个空间栅格或��定位区域索引�相比于 one-hot 硬标签，软标签分布包含了不同空间位置之间更细粒度的相对相似�信息，因此能够为学生网�提供更丰富的监�信号\cite{Hinton2015KD}�对于基于空间栅格的定位判别任务，学生网�的�终位置输出可进�步写为
+\begin{equation}
+\hat{m}
+=
+\arg\max_m q_m^S,
+\qquad
+\hat{\mathbf{p}}
+=
+\mathbf{c}_{\hat{m}},
+\label{eq:2_34_kd_position}
+\end{equation}
+其中，$\mathbf{c}_{\hat{m}}$ 表示预测栅格中心对应的位置�标�该式表明，知识蒸馏�迁移的并��般分类知识，�是�向空间栅格定位任务的区域判别能力；��文第四章中，这种能力进�步体现为完整协同观测�件下的空间结构知识向残缺观测�件下定位模型的迁移�
+
+图~\ref{fig:ch2_distillation_framework} 展示了知识蒸馏中典型的教师�学生学习架构��过该�制，学生网�能够�缺失部分节点观测的�件下，�过学习教师模型的判别特征维持定位�能的稳健��
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{figures/ch2/KD.jpg}
+    \caption{知识蒸馏教师�学生学习�制}
+    \label{fig:ch2_distillation_framework}
+\end{figure}
+
+综上，知识蒸馏�过引入教师模型的软标签监�，为观测不完整�件下的学生定位模型提供了更强的空间判别引导能力�这��制��文中并�主要用于�般意义上的模型压缩，�是�务于多无人�掉点�件下协同定位能力的知识迁移，从�为第四章�向残缺观测�景的鲁棒定位方法提供直接理论基��
+
+\section{定位�能评估}
+\label{sec:2_5}
+
+�完成经典定位模型以及�向定位的智能决策与知识迁移基�介绍之后，还�要进�步给出�文后续实验分析中采用的�能评估方式�对于定位问题��，方法优劣�终�要�过定量指标进行衡量，�这些指标既应反映整体精度，也应能够刻画极端误差和理论�能上限�基于这��虑，�文从定位误差评价指标和克拉美罗下界两个角度，对定位�能评估基�进行说明�
+
+\subsection{定位误差评价指标}
+\label{subsec:2_5_1}
+
+定位误差是衡量定位系统�能�直接的指标�设目标�实位置为
+\begin{equation}
+\mathbf{p}^{\mathrm{gt}}
+=
+[x^{\mathrm{gt}},y^{\mathrm{gt}}]^T,
+\label{eq:2_36_gt_position}
+\end{equation}
+定位算法输出的位置估计为
+\begin{equation}
+\hat{\mathbf{p}}
+=
+[\hat{x},\hat{y}]^T,
+\label{eq:2_37_est_position}
+\end{equation}
+则单次定位误差可定义为二�之间的欧氏�离
+\begin{equation}
+e
+=
+\left\|
+\hat{\mathbf{p}}-\mathbf{p}^{\mathrm{gt}}
+\right\|_2
+=
+\sqrt{
+(\hat{x}-x^{\mathrm{gt}})^2
++
+(\hat{y}-y^{\mathrm{gt}})^2
+}.
+\label{eq:2_38_single_error}
+\end{equation}
+若共� $N$ 个测试样�，则平�定位误差（Mean Localization Error）可表示为
+\begin{equation}
+\mathrm{Mean\ Localization\ Error}
+=
+\frac{1}{N}\sum_{i=1}^{N} e_i,
+\label{eq:2_39_mean_error}
+\end{equation}
+�方根误差（RMSE）可表示为
+\begin{equation}
+\mathrm{RMSE}
+=
+\sqrt{
+\frac{1}{N}\sum_{i=1}^{N} e_i^2
+},
+\label{eq:2_40_rmse}
+\end{equation}
+其中，$e_i$ 表示第 $i$ 个样�的定位误差�平�定位误差用于反映整体平�偏差水平，RMSE 则对较大误差更为敏感，因此更�合�为�体精度的综合衡量指标�
+
+除��类指标外，尾部误差指标同样具�重要意义�对于连续定位或复�环境定位任务��，偶发�的大误差��会直接导致轨迹推算跳变�目标误判或系统失稳�因此，�文后续还将使用百分位误差，如 $90\%$ 分位误差或 $95\%$ 分位误差，对误差分布尾部进行刻画�若记误差样�按从小到大排序后的 $p\%$ 分位�为 $e_{p}$，则其含义为：� $p\%$ 的测试样�定位误差不超过该��与��指标相比，百分位误差更能反映系统�极端�景下的稳定�与工程可用��
+
+此外，�后续多目标定位实验中，还将进�步采用误差累计分布函数（CDF）对整体误差分布进行描述�CDF 曲线的横轴表示误差阈�，纵轴表示误差不超过该阈�的样�累计比例�该图形化指标能够较直观�比较不同方法�整体误差分布上的优劣，尤其�合展示蒸馏增强模型与�增强模型之间的差异�
+
+综上，�文后续实验中采用的定位误差评价指标将主要包括平�定位误差�RMSE�百分位误差以及误差 CDF 曲线等形式�它们分别对应整体平��能�较大误差敏感��尾部鲁棒�和误差分布形�，从不同角度共同支撑定位�能分析�
+
+\subsection{克拉美罗下界分析基�}
+\label{subsec:2_5_2}
+
+除实验统计指标外，克拉美罗下界（Cramér--Rao Lower Bound, CRLB）也是分析定位系统理论�能的重要工具�其基��用�于：�给定观测模型与噪声统计�件下，给出无偏估计器协方差�能达到的理论下界，从�反映系统�理想�件下的�优可达�能\cite{Torrieri1984PassiveLocation,Wymeersch2009CooperativeLocalization}�
+
+对于�般定位问题，可将观测模型统�写为
+\begin{equation}
+\mathbf{z}
+=
+\mathbf{h}(\mathbf{p})
++
+\mathbf{n},
+\label{eq:2_41_general_obs}
+\end{equation}
+其中，$\mathbf{p}=[x,y]^T$ 为待估位置参数，$\mathbf{z}$ 为观测向量，$\mathbf{h}(\mathbf{p})$ 为位置到观测空间的映射函数，$\mathbf{n}$ 为观测噪声�若噪声协方差矩阵为 $\mathbf{R}$，则 Fisher 信息矩阵可表示为
+\begin{equation}
+\mathbf{J}(\mathbf{p})
+=
+\left(
+\frac{\partial \mathbf{h}}{\partial \mathbf{p}}
+\right)^T
+\mathbf{R}^{-1}
+\left(
+\frac{\partial \mathbf{h}}{\partial \mathbf{p}}
+\right),
+\label{eq:2_42_fim}
+\end{equation}
+其中，$\frac{\partial \mathbf{h}}{\partial \mathbf{p}}$ 表示观测函数对位置参数的雅可比矩阵�
+
+�无偏估计�件下，位置估计协方差满足
+\begin{equation}
+\mathrm{Cov}(\hat{\mathbf{p}})
+\succeq
+\mathbf{J}^{-1}(\mathbf{p}),
+\label{eq:2_43_crlb_cov}
+\end{equation}
+即任何无偏估计器的误差协方差都不可能优于 Fisher 信息矩阵��给出的下界�进�步�，对于二维定位问题，其�方根误差下界可写为
+\begin{equation}
+\mathrm{RMSE}
+\ge
+\sqrt{
+\mathrm{tr}
+\left(
+\mathbf{J}^{-1}(\mathbf{p})
+\right)
+}.
+\label{eq:2_44_crlb_rmse}
+\end{equation}
+CRLB 的意义�于，它不�赖于具体求解算法，�仅由观测模型和噪声统计决定�因此，可利用 CRLB 对不同观测量组合�理想�件下的理论可达精度进行比较�例如，对于 RSSI�AoA�TOA 和 TDOA 等经典方法，若其观测模型和噪声特�已知，则�可�过式~\eqref{eq:2_42_fim}--式~\eqref{eq:2_44_crlb_rmse} 计算理论误差下界\cite{Torrieri1984PassiveLocation,Wymeersch2009CooperativeLocalization}�
+
+�要指出的是，复�城市环境中的实际定位误差�常会高于理想 CRLB�其原因�于，CRLB 假设观测模型准确且噪声统计可知，�现实环境中广泛存�多径传播��视�偏差�模型失配和观测异常等问题，这些因素都会使实际误差偏离理想下界�然�，即便如此，CRLB 仍然是分析定位理论�能上限的重要参照�对于�文��，它的价�更多体现�理论层�：�方�说明不同观测模型的��精度差异，另�方�为后续实验结�分析提供理想�能对照�
+
+综上，定位误差评价指标与克拉美罗下界共同构成了�文后续章节的�能分析基��前�用于从实验层�定量评估定位方法的实际效�，后�则用于从理论层�衡量观测模型的可达�能边界�二�结合后，可较完整�支撑后续第三章与第四章中的实验结�分析与方法比较�
+
+\section{�章小结}
+\label{sec:2_6}
+
+�章围绕低成�无人�平台下手�直连卫星�景中的�合�手�终端定位问题，系统梳理了后续研究��的系统模型与理论基��首先，结合�合�手�终端排查任务特点，给出了低成�无人��动观测�景下的系统任务描述与�体架构，明确了�文�研究问题属于复�城市环境中的�合�式无源定位问题�其次，围绕目标手�到无人�观测平台之间的信号传播过程，对复�城市环境中的多径效应�时延扩展和信号衰落�制进行了分析，并结合手�直连卫星业务背景说明后续信号建模与特征提取��赖的�景约��
+
+�此基�上，�章进�步�结了 RSSI�AoA�TOA�TDOA 和 PDR 等经典定位方法模型，分析了不同观测量�对应的几何约�关系及其�复�城市环境中的�用边界�相关分析表明，�低成�无人�平台与复�传播环境的双重约�下，单�经典定位观测量��难以同时兼顾高精度�强鲁棒和低复�度，这为后续引入多源融合�强化学习与知识蒸馏等方法提供了问题背景�
+
+�后，�章从智能定位方法基�与�能评估基�两个方�，为后续章节展�做了铺垫�马尔可夫决策过程与 DQN 强化学习基�，为第三章中基于物理感知深度强化学习的单目标自�应融合定位方法提供了理论支撑；知识蒸馏基�，则为第四章中�向多无人�掉点�景的鲁棒定位方法奠定了理论基��同时，平�定位误差�RMSE�百分位误差以及克拉美罗下界等�能评估指标，也为后续实验分析提供了统�评价�据�
+
+进�步�，�章�建立的理论基�并不是彼此孤立的若干模型堆叠，�是围绕复�城市环境下手�直连卫星�合�手�终端定位这�核心任务�层展�：系统任务描述给出了应用背景，信号模型刻画了传播约�，经典定位模型揭示了单�观测量的�限，�智能决策与知识迁移基�则给出了后续方法设计的求解路径�由此，第二章�全文中承担了由任务问题向方法建模过渡的桥梁�用�
+
+综上，�章完成了从任务�景�信号模型�经典定位模型到智能方法基�的整体铺垫，为后续第三章单目标连续定位方法和第四章多目标并发定位方法的研究奠定了统�的理论基��
