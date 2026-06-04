@@ -1,4 +1,4 @@
-\documentclass[master,eng,fulltime,electronic,cenhdr,normaltoc]{buptthesis} % 专硕电子版
+\documentclass[master,eng,fulltime,electronic,cenhdr,normaltoc,macos]{buptthesis} % 专硕电子版
 %\documentclass[master,eng,fulltime,electronic,cenhdr,normaltoc,blind]{buptthesis} % 专硕电子版
 %\documentclass[master,phil,fulltime,electronic,cenhdr,normaltoc,blind]{buptthesis} % 学硕电子版
 %\documentclass[master,eng,fulltime,electronic,cenhdr,normaltoc]{buptthesis} % 专硕电子版
@@ -21,6 +21,26 @@
 % 检查是否为盲审版本
 \newif\ifWithOptionBlind 
 \@ifclasswith{buptthesis}{blind}{\WithOptionBlindtrue}{\WithOptionBlindfalse}
+
+% 双面打印时，前置单页材料背面留空。
+\newcommand{\BUPTblankprepage}{%
+  \thispagestyle{empty}%
+  \null
+  \newpage
+}
+
+\renewcommand{\makeprepages}{%
+  \makechinesetitle
+  \BUPTblankprepage
+  \makeenglishtitle
+  \BUPTblankprepage
+  \makecommitteelist
+  \BUPTblankprepage
+  \ifBUPT@option@blind \else
+    \makestatement
+    \BUPTblankprepage
+  \fi
+}
 \makeatother
 
 % 导入宏包
@@ -38,7 +58,7 @@
 
 % 正文当中的其他定义
 \setmainfont{Times New Roman} % 英文字体使用Times New Roman
-\setmathfont{XITS Math} % 数学公式字体使用XITS Math
+\setmathfont{latinmodern-math.otf} % 数学公式字体使用 TeX Live 自带字体，避免依赖系统字体
 \BUPTthesiscntitlepage{%
 	confidential = {公开}, % 目前只支持公开
 	title = {基于无人机载平台的\\卫星互联网终端高精度定位方法},  % 本章标题
@@ -99,7 +119,7 @@
 \include{Chapter/Chapter_01_Introduction} % 第一章：绪论
 \include{Chapter/Chapter_02_Fundamentals} % 第二章：系统模型与定位理论基础
 % 原第三章（单目标射频指纹定位）已被精简整合，故移除独立章节
-\include{Chapter/Chapter_04_Fusion} % 第三章：基于物理感知深度强化学习的单目标自适应融合定位方法
+\include{Chapter/Chapter_04_Fusion} % 第三章：基于一致性增强监督权重学习的单目标自适应融合定位方法
 \include{Chapter/Chapter_05_Multi_Target} % 第四章：基于空间信号表征的多目标协同鲁棒定位方法
 \include{Chapter/Chapter_06_Conclusion} % 第五章：结论与展望
 
@@ -110,6 +130,9 @@
 
 \backmatter
 \include{Chapter/Chapter_abbreviation} % 缩写附录
+\thispagestyle{empty}
+\mbox{}
+\clearpage
 \ifWithOptionBlind \else
 \include{Chapter/Chapter_acknowledgement} % 致谢
 \fi
