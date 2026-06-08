@@ -113,20 +113,40 @@
 \include{Chapter/Chapter_cnabstract} % 中文摘要
 \include{Chapter/Chapter_enabstract} % 英文摘要
 \tableofcontents % 目录
+\clearpage
+\null
+\thispagestyle{empty}
+\newpage
 \include{Chapter/Chapter_nomeclature} % 符号表
 
 \mainmatter
 \include{Chapter/Chapter_01_Introduction} % 第一章：绪论
 \include{Chapter/Chapter_02_Fundamentals} % 第二章：系统模型与定位理论基础
+\clearpage
+\thispagestyle{empty}
+\mbox{}
+\clearpage
 % 原第三章（单目标射频指纹定位）已被精简整合，故移除独立章节
 \include{Chapter/Chapter_04_Fusion} % 第三章：基于一致性增强监督权重学习的单目标自适应融合定位方法
 \include{Chapter/Chapter_05_Multi_Target} % 第四章：基于空间信号表征的多目标协同鲁棒定位方法
+\clearpage
+\thispagestyle{empty}
+\mbox{}
+\clearpage
 \include{Chapter/Chapter_06_Conclusion} % 第五章：结论与展望
+\clearpage
+\thispagestyle{empty}
+\mbox{}
+\clearpage
 
 \bibliographystyle{gbt7714-numerical}
 {\zihao{5}
 \bibliography{Bib/thesis} % 参考文献
 }
+\clearpage
+\null
+\thispagestyle{empty}
+\newpage
 
 \backmatter
 \include{Chapter/Chapter_abbreviation} % 缩写附录
@@ -135,6 +155,10 @@
 \clearpage
 \ifWithOptionBlind \else
 \include{Chapter/Chapter_acknowledgement} % 致谢
+\clearpage
+\null
+\thispagestyle{empty}
+\newpage
 \fi
 \include{Chapter/Chapter_publication} % 创新成果
 \ifWithOptionBlind \else

@@ -756,8 +756,10 @@
       \hline
       委员   & \BUPT@value@committeeMemberThirdName                                                                              & \BUPT@value@committeeMemberThirdTitle  & \BUPT@value@committeeMemberThirdOrgan  \\
       \hline
+      \ifx\BUPT@value@committeeMemberFourthName\@empty\else
       委员   & \BUPT@value@committeeMemberFourthName                                                                             & \BUPT@value@committeeMemberFourthTitle & \BUPT@value@committeeMemberFourthOrgan \\
       \hline
+      \fi
       秘书   & \BUPT@value@committeeSecretaryName                                                                                & \BUPT@value@committeeSecretaryTitle    & \BUPT@value@committeeSecretaryOrgan    \\
       \hline
       答辩日期 & \multicolumn{3}{c|}{\BUPT@value@dissertationYear 年 \BUPT@value@dissertationMonth 月 \BUPT@value@dissertationDay 日}                                                                                   \\
